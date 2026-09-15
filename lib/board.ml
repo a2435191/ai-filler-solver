@@ -2,11 +2,15 @@ type t = Color.t array array
 
 let height = 7
 let width = 8
-let get_ll board = board.(0).(0)
-let get_ur board = board.(height - 1).(width - 1)
-let set_ll board x = board.(0).(0) <- x
-let set_ur board x = board.(height - 1).(width - 1) <- x
-let corner_colors_inv board = not (Color.equal (get_ll board) (get_ur board))
+let get board (y, x) = board.(y).(x)
+let set board (y, x) c = board.(y).(x) <- c
+
+type player = Us | Opp
+
+let player_to_corner = function Us -> (0, 0) | Opp -> (height - 1, width - 1)
+let get board p = get board (player_to_corner p)
+let set board p c = set board (player_to_corner p) c
+let corner_colors_inv board = not (Color.equal (get board Us) (get board Opp))
 let height_inv board = Array.length board == height
 let width_inv board = Array.for_all (fun row -> Array.length row == width) board
 let inv board = corner_colors_inv board && height_inv board && width_inv board
@@ -17,8 +21,9 @@ let check_inv board =
 
 let random () =
   let ret = Array.init_matrix height width (fun _ _ -> Color.random ()) in
-  if Color.equal (get_ll ret) (get_ur ret) then
-    set_ll ret (Color.random_excluding (get_ll ret));
+  let our_color = get ret Us in
+  if Color.equal our_color (get ret Opp) then
+    set ret Us (Color.random_excluding our_color);
   check_inv ret
 
 let print board =
@@ -26,3 +31,46 @@ let print board =
     Array.iter (fun c -> print_string (Color.to_square c)) board.(i);
     print_newline ()
   done
+
+let neighbors (y, x) =
+  [ (y + 1, x); (y - 1, x); (x + 1, y); (x - 1, y) ]
+  |> List.filter (fun (y', x') ->
+      0 <= y' && y' <= height && 0 <= x' && x' <= width)
+
+(* TODO this can be combined with `move`
+ * Count the size of the colored-in region starting at a corner *)
+let region_size b p =
+  let visited = Array.make_matrix height width false in
+  let c = get b p in
+  let rec count (y, x) =
+    visited.(y).(x) <- true;
+    List.fold_right
+      (fun (y', x') acc ->
+        if (not visited.(y').(x')) && Color.equal b.(y').(x') c then
+          acc + count (y', x')
+        else acc)
+      (neighbors (y, x))
+      1
+  in
+  count (player_to_corner p)
+
+let copy b = Array.(map copy) b
+
+let move old new_color p =
+  let new_ = copy old in
+  let visited = Array.make_matrix height width false in
+  (* corner color *)
+  let old_color = get old p in
+
+  (* flood fill *)
+  let rec fill (y, x) =
+    new_.(y).(x) <- new_color;
+    visited.(y).(x) <- true;
+    neighbors (y, x)
+    |> List.iter (fun (y', x') ->
+        if (not visited.(y').(x')) && Color.equal old.(y').(x') old_color then
+          fill (y, x))
+  in
+
+  fill (player_to_corner p);
+  new_
