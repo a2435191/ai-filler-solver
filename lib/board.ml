@@ -35,6 +35,32 @@ let print board =
     print_newline ()
   done
 
+let uchar_to_string u =
+  let buf = Buffer.create 4 in
+  Buffer.add_utf_8_uchar buf u;
+  Buffer.contents buf
+
+let parse_line line : Color.t array =
+  let len = String.length line in
+  let rec go i acc =
+    if i >= len then List.rev acc
+    else
+      let decoded = String.get_utf_8_uchar line i in
+      if Uchar.utf_decode_is_valid decoded then
+        let i' = i + Uchar.utf_decode_length decoded in
+        let s = decoded |> Uchar.utf_decode_uchar |> uchar_to_string in
+        if String.trim s = "" then go i' acc
+        else
+          let c = Color.from_string s in
+          go i' (c :: acc)
+      else raise (Invalid_argument ("Failed to parse line: " ^ line))
+  in
+  Array.of_list (go 0 [])
+
+let parse str =
+  String.split_all ~sep:"\n" str
+  |> List.rev |> List.map parse_line |> Array.of_list |> inv
+
 let neighbors (y, x) =
   [ (y + 1, x); (y - 1, x); (x + 1, y); (x - 1, y) ]
   |> List.filter (fun (y', x') ->
