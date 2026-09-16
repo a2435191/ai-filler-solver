@@ -23,7 +23,17 @@ let max_fn l f =
         (h, f h)
         t
 
-let min_fn l f = max_fn l (fun x -> -1.0 *. f x)
+(* TODO: deduplicate this *)
+let min_fn l f =
+  match l with
+  | [] -> raise (Invalid_argument "min_fn got passed an empty list")
+  | h :: t ->
+      List.fold_left
+        (fun (e, score) e' ->
+          let score' = f e' in
+          if score >= score' then (e', score') else (e, score))
+        (h, f h)
+        t
 
 (** The core minimax algorithm. Returns [(best_score, best_move)] for [Us] *)
 let minimax ?(max_depth = 10) board =
