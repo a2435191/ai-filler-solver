@@ -36,7 +36,7 @@ let min_fn l f =
         t
 
 (** The core minimax algorithm. Returns [(best_score, best_move)] for [Us] *)
-let minimax ?(max_depth = 10) board =
+let minimax ?(max_depth = 10) ?(player = Us) board =
   (* Returns the best [(color, score)] for player [p] to make *)
   let rec go fuel b p : Color.t * float =
     assert (fuel >= 0);
@@ -61,4 +61,4 @@ let minimax ?(max_depth = 10) board =
     | Opp -> min_fn moves score_fn
   in
 
-  go max_depth board Us
+  go max_depth board player
