@@ -1,6 +1,8 @@
 type t = Red | Green | Yellow | Blue | Purple | Black
 [@@deriving show, eq, enum]
 
+let all = [ Red; Green; Yellow; Blue; Purple; Black ]
+
 let to_square = function
   | Red -> "🟥"
   | Green -> "🟩"

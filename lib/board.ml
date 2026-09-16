@@ -2,12 +2,15 @@ type t = Color.t array array
 
 let height = 7
 let width = 8
+let total_squares = height * width
+let squares_to_tie = total_squares / 2
 let get board (y, x) = board.(y).(x)
 let set board (y, x) c = board.(y).(x) <- c
 
 type player = Us | Opp
 
 let player_to_corner = function Us -> (0, 0) | Opp -> (height - 1, width - 1)
+let other_player = function Us -> Opp | Opp -> Us
 let get board p = get board (player_to_corner p)
 let set board p c = set board (player_to_corner p) c
 let corner_colors_inv board = not (Color.equal (get board Us) (get board Opp))
