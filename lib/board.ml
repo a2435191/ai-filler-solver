@@ -14,8 +14,8 @@ let other_player = function Us -> Opp | Opp -> Us
 let get board p = get board (player_to_corner p)
 let set board p c = set board (player_to_corner p) c
 let corner_colors_inv board = not (Color.equal (get board Us) (get board Opp))
-let height_inv board = Array.length board == height
-let width_inv board = Array.for_all (fun row -> Array.length row == width) board
+let height_inv board = Array.length board = height
+let width_inv board = Array.for_all (fun row -> Array.length row = width) board
 let inv board = corner_colors_inv board && height_inv board && width_inv board
 
 let check_inv board =

@@ -39,7 +39,7 @@ let minimax ?(max_depth = 10) board =
     in
 
     let score_fn =
-      if fuel == 0 then fun c -> score_position (move b c p)
+      if fuel = 0 then fun c -> score_position (move b c p)
         (* switch to heuristic *)
       else fun c ->
         let _, us_score = go (fuel - 1) (move b c p) (other_player p) in
