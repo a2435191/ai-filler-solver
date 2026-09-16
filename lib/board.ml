@@ -4,22 +4,23 @@ let height = 7
 let width = 8
 let total_squares = height * width
 let squares_to_tie = total_squares / 2
-let get board (y, x) = board.(y).(x)
-let set board (y, x) c = board.(y).(x) <- c
+let get_coord board (y, x) = board.(y).(x)
+let set_coord board (y, x) c = board.(y).(x) <- c
 
 type player = Us | Opp
 
 let player_to_corner = function Us -> (0, 0) | Opp -> (height - 1, width - 1)
 let other_player = function Us -> Opp | Opp -> Us
-let get board p = get board (player_to_corner p)
-let set board p c = set board (player_to_corner p) c
+let get board p = get_coord board (player_to_corner p)
+let set board p c = set_coord board (player_to_corner p) c
 let corner_colors_inv board = not (Color.equal (get board Us) (get board Opp))
 let height_inv board = Array.length board = height
 let width_inv board = Array.for_all (fun row -> Array.length row = width) board
-let inv board = corner_colors_inv board && height_inv board && width_inv board
 
 let check_inv board =
-  assert (inv board);
+  assert (corner_colors_inv board);
+  assert (height_inv board);
+  assert (width_inv board);
   board
 
 let random () =
@@ -59,12 +60,13 @@ let parse_line line : Color.t array =
 
 let parse str =
   String.split_all ~sep:"\n" str
-  |> List.rev |> List.map parse_line |> Array.of_list |> inv
+  |> List.filter (fun s -> not (String.trim s = ""))
+  |> List.rev |> List.map parse_line |> Array.of_list |> check_inv
 
 let neighbors (y, x) =
-  [ (y + 1, x); (y - 1, x); (x + 1, y); (x - 1, y) ]
+  [ (y + 1, x); (y - 1, x); (y, x + 1); (y, x - 1) ]
   |> List.filter (fun (y', x') ->
-      0 <= y' && y' <= height && 0 <= x' && x' <= width)
+      0 <= y' && y' < height && 0 <= x' && x' < width)
 
 (* TODO this can be combined with `move`
  * Count the size of the colored-in region starting at a corner *)
@@ -98,8 +100,8 @@ let move old new_color p =
     neighbors (y, x)
     |> List.iter (fun (y', x') ->
         if (not visited.(y').(x')) && Color.equal old.(y').(x') old_color then
-          fill (y, x))
+          fill (y', x'))
   in
 
   fill (player_to_corner p);
-  new_
+  check_inv new_
