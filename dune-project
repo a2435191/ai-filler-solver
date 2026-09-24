@@ -1,8 +1,6 @@
-(lang dune 3.21)
+(lang dune 3.24)
 
 (name filler)
-
-(generate_opam_files true)
 
 (source
  (github username/reponame))
@@ -19,7 +17,12 @@
  (name filler)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml)
+ (depends
+  (ocaml
+   (= 5.5.1))
+  dune
+  (ppx_deriving
+   (= 6.2.0)))
  (tags
   ("add topics" "to describe" your project)))
 
