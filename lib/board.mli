@@ -11,12 +11,12 @@ val set : t -> int * int -> Color.t -> unit
     [(y, x)] to [color] *)
 
 val get_corner : t -> Player.t -> Color.t
-(** [get_corner board player] is like [get] but always returns the corner color
-    corresponding to [player] *)
+(** [get_corner board player] returns the color of the corner corresponding to
+    [player] *)
 
 val set_corner : t -> Player.t -> Color.t -> unit
-(** [set_corner board player color] is like [set] but always sets the corner
-    color corresponding to [player] to [color] *)
+(** [set_corner board player color] sets the color of the corner corresponding
+    to [player] to [color] *)
 
 val check_inv : t -> t
 (** Return the input if it satisfies all the invariants, otherwise raise *)
