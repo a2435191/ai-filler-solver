@@ -42,6 +42,7 @@ let check_inv board =
 
 (** Random generation, parsing **)
 
+(* TODO the game doesn't generate boards with adjacent tiles of the same color. We should do the same *)
 let random () =
   let ret = Array.init_matrix height width (fun _ _ -> Color.random ()) in
   let our_color = get ret Us in
