@@ -16,28 +16,16 @@ let heuristic b =
   else if opp > squares_to_tie then neg_infinity
   else float_of_int (us - opp)
 
-let max_fn l f =
-  match l with
-  | [] -> raise (Invalid_argument "max_fn got passed an empty list")
-  | h :: t ->
-      List.fold_left
-        (fun (e, score) e' ->
-          let score' = f e' in
-          if score <= score' then (e', score') else (e, score))
-        (h, f h)
-        t
+(** [max_of_list ~le lst] computes the maximum element of [lst], where
+    comparison [<=] is done by the [le] function ([le x y] returns [true] iff
+    [x <= y]). Tiebreaking order is unspecified. Raises for an empty list. *)
+let max_of_list ~le = function
+  | [] -> raise (Invalid_argument "max_of_list got passed an empty list")
+  | h :: t -> List.fold_left (fun acc x -> if le acc x then x else acc) h t
 
-(* TODO: deduplicate this *)
-let min_fn l f =
-  match l with
-  | [] -> raise (Invalid_argument "min_fn got passed an empty list")
-  | h :: t ->
-      List.fold_left
-        (fun (e, score) e' ->
-          let score' = f e' in
-          if score >= score' then (e', score') else (e, score))
-        (h, f h)
-        t
+(** [min_of_list ~le lst] is like [max_of_list] but returns the minimum element
+    according to [le]. *)
+let min_of_list ~le = max_of_list ~le:(Fun.flip le)
 
 (** The core minimax algorithm. Returns [(best_move, best_score)] for [player]
     (default: [Us]), searching at most [max_depth] (default: [10]) layers deep.
@@ -54,17 +42,28 @@ let minimax ?(max_depth = 10) ?(player = Us) board =
         List.filter (fun c -> (not (equal c us_c)) && not (equal c op_c)) all)
     in
 
+    (* what we use to evaluate moves *)
     let score_fn =
-      if fuel = 0 then (* switch to heuristic *) fun c -> heuristic (move b c p)
-      else fun c ->
-        let _, us_score = go (fuel - 1) (move b c p) (other_player p) in
+      if fuel = 0 then (* switch to heuristic *) heuristic
+      else (* otherwise recurse *) fun b ->
+        let _, us_score = go (fuel - 1) b (other_player p) in
         us_score
     in
 
-    (* negate this because a positive score is good for [Us], not [Opp] *)
+    let moves_and_scores =
+      List.map
+        (fun c ->
+          let next = move b c p in
+          (c, score_fn next))
+        moves
+    in
+    let le (_, score1) (_, score2) = (score1 : float) <= score2 in
+
     match p with
-    | Us -> max_fn moves score_fn
-    | Opp -> min_fn moves score_fn
+    | Us -> max_of_list ~le moves_and_scores
+    | Opp ->
+        (* negate this because a positive score is good for [Us], not [Opp] *)
+        min_of_list ~le moves_and_scores
   in
 
   go max_depth board player
