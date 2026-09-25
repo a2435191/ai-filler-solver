@@ -1,5 +1,4 @@
 type t = Color.t array array
-(** The type of 7x8 game boards *)
 
 (* Internal info: a board is represented so that index [(y, x)] corresponds to 
   [y] squares above the bottom row and [x] to the right of the left column.
@@ -15,11 +14,7 @@ let squares_to_tie = total_squares / 2
 let get_coord board (y, x) = board.(y).(x)
 let set_coord board (y, x) c = board.(y).(x) <- c
 
-(** There are two players in the game, and we represent the player that we're
-    trying to help win as [Us], and the other player as [Opp] *)
-type player =
-  | Us  (** The player that we're trying to help win *)
-  | Opp  (** The player that we're trying to help lose *)
+type player = Us | Opp
 
 let player_to_corner = function Us -> (0, 0) | Opp -> (height - 1, width - 1)
 let other_player = function Us -> Opp | Opp -> Us
