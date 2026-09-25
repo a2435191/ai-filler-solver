@@ -1,3 +1,5 @@
+open Constants
+
 type t = Color.t array array
 
 (* Internal info: a board is represented so that index [(y, x)] corresponds to 
@@ -7,10 +9,6 @@ type t = Color.t array array
   Compared to how this is often done in games/general 2D arrays, this
   is flipped around the y-axis. *)
 
-let height = 7
-let width = 8
-let total_squares = height * width
-let squares_to_tie = total_squares / 2
 let get board (y, x) = board.(y).(x)
 let set board (y, x) c = board.(y).(x) <- c
 

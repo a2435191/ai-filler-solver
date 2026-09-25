@@ -1,20 +1,6 @@
 type t
 (** The type of 7x8 game boards *)
 
-(* Constants *)
-
-val height : int
-(** [7] *)
-
-val width : int
-(** [8] *)
-
-val total_squares : int
-(** [width * height] *)
-
-val squares_to_tie : int
-(** [total_squares / 2] *)
-
 (* Basic helper functions *)
 
 val get : t -> int * int -> Color.t

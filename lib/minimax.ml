@@ -1,3 +1,4 @@
+open Constants
 open Board
 
 (** [heuristic board] evaluates how good/bad the position [board] is. + means
