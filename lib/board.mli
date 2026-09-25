@@ -31,7 +31,10 @@ val parse : string -> t
 (** Parse a newline-delimited string as a board. Accepts the format output by
     [print], or letters for each of the colors (see [Color.from_string]) *)
 
-(* Compute information required for heuristic functions *)
+(* Compute information required for heuristic functions and AI strategies *)
+
+val valid_moves : t -> Color.t list
+(** Always four moves: the six colors except those at the two player corners *)
 
 val region_size : t -> Player.t -> int
 (** Count the size of the colored-in region starting at a corner (corresponding

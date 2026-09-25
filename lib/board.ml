@@ -69,6 +69,11 @@ let parse str =
   |> List.filter (fun s -> not (String.trim s = ""))
   |> List.rev |> List.map parse_line |> Array.of_list |> check_inv
 
+let valid_moves b =
+  let us = get_corner b Us in
+  let op = get_corner b Opp in
+  Color.(List.filter (fun c -> (not (equal c us)) && not (equal c op)) all)
+
 (** [neighbors (y, x)] returns all the 4-neighbors
     [(y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)] that fit on the board, i.e.
     have first coordinate in [\[0, height)] and second coordinate in
