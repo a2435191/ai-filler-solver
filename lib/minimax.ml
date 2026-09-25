@@ -27,9 +27,11 @@ let max_of_list ~le = function
     according to [le]. *)
 let min_of_list ~le = max_of_list ~le:(Fun.flip le)
 
-(** The core minimax algorithm. Returns [(best_move, best_score)] for [player]
-    (default: [Us]), searching at most [max_depth] (default: [10]) layers deep.
-*)
+(** The core minimax algorithm. See e.g.
+    https://wikipedia.org/wiki/Minimax#Minimax_algorithm_with_alternate_moves.
+
+    Returns [(best_move, best_score)] for [player] (default: [Us]), searching at
+    most [max_depth] (default: [10]) layers deep. *)
 let minimax ?(max_depth = 10) ?(player = Us) board =
   (* Returns the best [(color, score)] for player [p] to make *)
   let rec go fuel b p : Color.t * float =
