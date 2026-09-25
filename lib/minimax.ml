@@ -1,5 +1,6 @@
 open Constants
 open Board
+open Player
 
 (** [heuristic board] evaluates how good/bad the position [board] is. + means
     good for [Us], - means good for [Opp]. [infinity]/[neg_infinity] is used to

@@ -1,4 +1,5 @@
 open Constants
+open Player
 
 type t = Color.t array array
 
@@ -11,11 +12,6 @@ type t = Color.t array array
 
 let get board (y, x) = board.(y).(x)
 let set board (y, x) c = board.(y).(x) <- c
-
-type player = Us | Opp
-
-let player_to_corner = function Us -> (0, 0) | Opp -> (height - 1, width - 1)
-let other_player = function Us -> Opp | Opp -> Us
 let get_corner board p = get board (player_to_corner p)
 let set_corner board p c = set board (player_to_corner p) c
 
