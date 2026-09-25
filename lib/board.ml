@@ -12,8 +12,8 @@ type t = Color.t array array
 
 let get board (y, x) = board.(y).(x)
 let set board (y, x) c = board.(y).(x) <- c
-let get_corner board p = get board (player_to_corner p)
-let set_corner board p c = set board (player_to_corner p) c
+let get_corner board p = get board (to_corner p)
+let set_corner board p c = set board (to_corner p) c
 
 (** The colors of board corners should never be the same *)
 let corner_colors_inv board =
@@ -92,7 +92,7 @@ let region_size b p =
       (neighbors (y, x))
       1
   in
-  count (player_to_corner p)
+  count (to_corner p)
 
 (** Deep copy *)
 let copy b = Array.(map copy) b
@@ -113,5 +113,5 @@ let move old new_color p =
           fill (y', x'))
   in
 
-  fill (player_to_corner p);
+  fill (to_corner p);
   check_inv new_
