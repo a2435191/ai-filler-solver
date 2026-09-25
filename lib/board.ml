@@ -11,18 +11,19 @@ let height = 7
 let width = 8
 let total_squares = height * width
 let squares_to_tie = total_squares / 2
-let get_coord board (y, x) = board.(y).(x)
-let set_coord board (y, x) c = board.(y).(x) <- c
+let get board (y, x) = board.(y).(x)
+let set board (y, x) c = board.(y).(x) <- c
 
 type player = Us | Opp
 
 let player_to_corner = function Us -> (0, 0) | Opp -> (height - 1, width - 1)
 let other_player = function Us -> Opp | Opp -> Us
-let get board p = get_coord board (player_to_corner p)
-let set board p c = set_coord board (player_to_corner p) c
+let get_corner board p = get board (player_to_corner p)
+let set_corner board p c = set board (player_to_corner p) c
 
 (** The colors of board corners should never be the same *)
-let corner_colors_inv board = not (Color.equal (get board Us) (get board Opp))
+let corner_colors_inv board =
+  not (Color.equal (get_corner board Us) (get_corner board Opp))
 
 let height_inv board = Array.length board = height
 let width_inv board = Array.for_all (fun row -> Array.length row = width) board
@@ -36,9 +37,9 @@ let check_inv board =
 (* TODO the game doesn't generate boards with adjacent tiles of the same color. We should do the same *)
 let random () =
   let ret = Array.init_matrix height width (fun _ _ -> Color.random ()) in
-  let our_color = get ret Us in
-  if Color.equal our_color (get ret Opp) then
-    set ret Us (Color.random_excluding our_color);
+  let our_color = get_corner ret Us in
+  if Color.equal our_color (get_corner ret Opp) then
+    set_corner ret Us (Color.random_excluding our_color);
   check_inv ret
 
 let print board =
@@ -86,7 +87,7 @@ let neighbors (y, x) =
 (* TODO this can be combined with `move` *)
 let region_size b p =
   let visited = Array.make_matrix height width false in
-  let c = get b p in
+  let c = get_corner b p in
   let rec count (y, x) =
     visited.(y).(x) <- true;
     List.fold_right
@@ -106,7 +107,7 @@ let move old new_color p =
   let new_ = copy old in
   let visited = Array.make_matrix height width false in
   (* corner color *)
-  let old_color = get old p in
+  let old_color = get_corner old p in
 
   (* flood fill *)
   let rec fill (y, x) =

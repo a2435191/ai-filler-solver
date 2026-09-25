@@ -10,8 +10,8 @@ val squares_to_tie : int
 
 (* Basic helper functions *)
 
-val get_coord : t -> int * int -> Color.t
-val set_coord : t -> int * int -> Color.t -> unit
+val get : t -> int * int -> Color.t
+val set : t -> int * int -> Color.t -> unit
 
 (** There are two players in the game, and we represent the player that we're
     trying to help win as [Us], and the other player as [Opp] *)
@@ -21,8 +21,8 @@ type player =
 
 val player_to_corner : player -> int * int
 val other_player : player -> player
-val get : t -> player -> Color.t
-val set : t -> player -> Color.t -> unit
+val get_corner : t -> player -> Color.t
+val set_corner : t -> player -> Color.t -> unit
 
 val check_inv : t -> t
 (** Returns the input if it satisfies all the invariants, otherwise raises *)
