@@ -20,8 +20,10 @@ let from_string = function
   | "k" | "K" | "⬛" -> Black
   | other -> raise (Invalid_argument other)
 
+(* Get a uniformly random color *)
 let random () = of_enum (Random.int_in_range ~min ~max) |> Option.get
 
+(* [random_excluding c] returns a uniformly random color that is not [c]  *)
 let random_excluding c =
   let i = Random.int_in_range ~min ~max:(max - 1) in
   (* Remap everything any index at or above c by adding one *)
