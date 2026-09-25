@@ -50,6 +50,7 @@ let minimax ?(max_depth = 10) ?(player = Us) board =
         us_score
     in
 
+    (* Below, we get the move that scores the highest (helps [Us]) if it's our turn, otherwise the move that scores the lowest (helps [Opp])  *)
     let moves_and_scores =
       List.map
         (fun c ->
@@ -61,9 +62,7 @@ let minimax ?(max_depth = 10) ?(player = Us) board =
 
     match p with
     | Us -> max_of_list ~le moves_and_scores
-    | Opp ->
-        (* negate this because a positive score is good for [Us], not [Opp] *)
-        min_of_list ~le moves_and_scores
+    | Opp -> min_of_list ~le moves_and_scores
   in
 
   go max_depth board player
