@@ -23,9 +23,15 @@ val player_to_corner : player -> int * int
 val other_player : player -> player
 val get : t -> player -> Color.t
 val set : t -> player -> Color.t -> unit
+
 val check_inv : t -> t
+(** Returns the input if it satisfies all the invariants, otherwise raises *)
+
 val random : unit -> t
+
 val print : t -> unit
+(** Pretty-print board to stdout *)
+
 val parse : string -> t
 
 (* Compute information required for heuristic functions *)
