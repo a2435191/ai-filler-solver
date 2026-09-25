@@ -1,6 +1,10 @@
 open Board
 
-(** Heuristic score. + means good for [Us], - means good for [Opp] *)
+(** [heuristic board] evaluates how good/bad the position [board] is. + means
+    good for [Us], - means good for [Opp]. [infinity]/[neg_infinity] is used to
+    denotea state in which we are/the opponent is guaranteed to win,
+    respectively. This function is used when we have gone deep into the search
+    tree and don't want to go deeper. *)
 let heuristic b =
   let us = region_size b Us in
   let opp = region_size b Opp in
@@ -35,7 +39,9 @@ let min_fn l f =
         (h, f h)
         t
 
-(** The core minimax algorithm. Returns [(best_score, best_move)] for [Us] *)
+(** The core minimax algorithm. Returns [(best_move, best_score)] for [player]
+    (default: [Us]), searching at most [max_depth] (default: [10]) layers deep.
+*)
 let minimax ?(max_depth = 10) ?(player = Us) board =
   (* Returns the best [(color, score)] for player [p] to make *)
   let rec go fuel b p : Color.t * float =
