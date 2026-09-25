@@ -34,8 +34,8 @@ let minimax ?(max_depth = 10) ?(player = Us) board =
   (* Returns the best [(color, score)] for player [p] to make *)
   let rec go fuel b p : Color.t * float =
     assert (fuel >= 0);
-    let us_c = get b Us in
-    let op_c = get b Opp in
+    let us_c = get_corner b Us in
+    let op_c = get_corner b Opp in
     (* 4 available moves *)
     let moves =
       Color.(
