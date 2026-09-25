@@ -52,11 +52,7 @@ let minimax ?(max_depth = 10) ?(player = Us) board =
 
     (* Below, we get the move that scores the highest (helps [Us]) if it's our turn, otherwise the move that scores the lowest (helps [Opp])  *)
     let moves_and_scores =
-      List.map
-        (fun c ->
-          let next = move b c p in
-          (c, score_fn next))
-        moves
+      List.map (fun c -> (c, score_fn (move b c p))) moves
     in
     let le (_, score1) (_, score2) = (score1 : float) <= score2 in
 
