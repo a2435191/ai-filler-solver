@@ -21,8 +21,6 @@ let other_player = function Us -> Opp | Opp -> Us
 let get board p = get_coord board (player_to_corner p)
 let set board p c = set_coord board (player_to_corner p) c
 
-(** Invariants **)
-
 (** The colors of board corners should never be the same *)
 let corner_colors_inv board = not (Color.equal (get board Us) (get board Opp))
 
@@ -34,8 +32,6 @@ let check_inv board =
   assert (height_inv board);
   assert (width_inv board);
   board
-
-(** Random generation, parsing **)
 
 (* TODO the game doesn't generate boards with adjacent tiles of the same color. We should do the same *)
 let random () =
@@ -78,8 +74,6 @@ let parse str =
   |> List.filter (fun s -> not (String.trim s = ""))
   |> List.rev |> List.map parse_line |> Array.of_list |> check_inv
 
-(** Compute information required for heuristic functions **)
-
 (** [neighbors (y, x)] returns all the 4-neighbors
     [(y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)] that fit on the board, i.e.
     have first coordinate in [\[0, height)] and second coordinate in
@@ -90,9 +84,6 @@ let neighbors (y, x) =
       0 <= y' && y' < height && 0 <= x' && x' < width)
 
 (* TODO this can be combined with `move` *)
-
-(** Count the size of the colored-in region starting at a corner (corresponding
-    to either player) *)
 let region_size b p =
   let visited = Array.make_matrix height width false in
   let c = get b p in
@@ -111,8 +102,6 @@ let region_size b p =
 (** Deep copy *)
 let copy b = Array.(map copy) b
 
-(** [move board color player] computes the new board if player [player] makes
-    move [color] on board [board] *)
 let move old new_color p =
   let new_ = copy old in
   let visited = Array.make_matrix height width false in

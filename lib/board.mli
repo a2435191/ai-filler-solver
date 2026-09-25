@@ -31,4 +31,9 @@ val parse : string -> t
 (* Compute information required for heuristic functions *)
 
 val region_size : t -> player -> int
+(** Count the size of the colored-in region starting at a corner (corresponding
+    to either player) *)
+
 val move : t -> Color.t -> player -> t
+(** [move board color player] computes the new board if player [player] makes
+    move [color] on board [board] *)
