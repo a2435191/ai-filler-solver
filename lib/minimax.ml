@@ -2,7 +2,7 @@ open Board
 
 (** [heuristic board] evaluates how good/bad the position [board] is. + means
     good for [Us], - means good for [Opp]. [infinity]/[neg_infinity] is used to
-    denotea state in which we are/the opponent is guaranteed to win,
+    denote a state in which we are/the opponent is guaranteed to win,
     respectively. This function is used when we have gone deep into the search
     tree and don't want to go deeper. *)
 let heuristic b =
