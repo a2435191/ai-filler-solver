@@ -1,6 +1,5 @@
 open Constants
 open Board
-open Player
 
 (** [heuristic board] evaluates how good/bad the position [board] is. + means
     good for [Us], - means good for [Opp]. [infinity]/[neg_infinity] is used to
@@ -50,7 +49,7 @@ let minimax ?(max_depth = 10) ?(player = Us) board =
     let score_fn =
       if fuel = 0 then (* switch to heuristic *) heuristic
       else (* otherwise recurse *) fun b ->
-        let _, us_score = go (fuel - 1) b (Player.other p) in
+        let _, us_score = go (fuel - 1) b (other_player p) in
         us_score
     in
 
