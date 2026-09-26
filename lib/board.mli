@@ -47,6 +47,11 @@ val move : t -> Color.t -> Player.t -> t
 (** [move board color player] computes the new board if player [player] makes
     move [color] on board [board] *)
 
+type game_state = Win | Loss | Tie | Not_done
+
+val end_state : int -> int -> game_state
+(** [end_state us_size opp_size] *)
+
 val is_done : int -> int -> bool
 (** [is_done us_size opp_size] returns [true] iff the game has a known winner
     (even if there are squares not yet captured), i.e. [us_size] or [opp_size]

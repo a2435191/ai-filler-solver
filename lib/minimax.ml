@@ -2,21 +2,25 @@ open Constants
 open Board
 open Player
 
-type score = float * bool (* (score, is_done) *)
+let win_score = 10000.0
 
-(** [heuristic board] evaluates how good/bad the position [board] is, as well as
-    whether the game has finished. + means good for [Us], - means good for
-    [Opp]. [infinity]/[neg_infinity] is used to denote a state in which we
-    are/the opponent is guaranteed to win, respectively. This function is used
-    when we have gone deep into the search tree and don't want to go deeper. *)
-let heuristic b =
-  let us = region_size b Us in
-  let opp = region_size b Opp in
+(** [heuristic us_score opp_score fuel] evaluates how good/bad a game state with
+    [us_score] many tiles controlled by [Us] and [opp_score] many controlled by
+    [Opp] is. Additionally, for states where one player has already won, we use
+    [fuel] (plies remaining) as a bonus, to incentivize winning early. + means
+    good for [Us], - means good for [Opp]. This function is used when we don't
+    want to go deeper into the search tree, either because we're out of [fuel]
+    or because we're in a terminal state (see [Board.is_done]). *)
+let heuristic us opp fuel =
   assert (us > 0);
   assert (opp > 0);
   assert (us + opp <= total_squares);
 
-  (float_of_int (us - opp), Board.is_done us opp)
+  match Board.end_state us opp with
+  | Win -> win_score +. float_of_int fuel
+  | Loss -> -.win_score -. float_of_int fuel
+  | Tie -> 0.0
+  | Not_done -> float_of_int (us - opp)
 
 (** [max_of_list ~le lst] computes the maximum element of [lst], where
     comparison [<=] is done by the [le] function ([le x y] returns [true] iff
@@ -36,27 +40,22 @@ let min_of_list ~le = max_of_list ~le:(Fun.flip le)
     most [max_depth] (default: [10]) layers deep. *)
 let minimax ?(max_depth = 10) ?(player = Us) board =
   (* Returns the best [(color, score)] for player [p] to make *)
-  let rec go fuel b p : Color.t * score =
+  let rec go fuel b p : Color.t * float =
     assert (fuel >= 0);
     (* 4 available moves *)
     let moves = valid_moves b in
 
     (* what we use to evaluate moves *)
-    let score_fn =
-      if fuel = 0 then (* switch to heuristic *) heuristic
-      else (* otherwise check if we're done, and if not then recurse *) fun b ->
-        let us_size = region_size b Player.Us in
-        let opp_size = region_size b Player.Opp in
-        if Board.is_done us_size opp_size then
-          let score =
-            if us_size = opp_size then 0.0
-            else if us_size > opp_size then 10000.0 +. float_of_int fuel
-            else -10000.0 -. float_of_int fuel
-          in
-          (score, true)
-        else
-          let _, us_score = go (fuel - 1) b (Player.other p) in
-          us_score
+    let score_fn b =
+      let us_size = region_size b Us in
+      let opp_size = region_size b Opp in
+
+      if fuel = 0 || Board.is_done us_size opp_size then
+        (* we're at a leaf node or the game is done, so use the heuristic *)
+        heuristic us_size opp_size fuel
+      else
+        let _, us_score = go (fuel - 1) b (Player.other p) in
+        us_score
     in
 
     (* Below, we get the move that scores the highest (helps [Us]) if it's our turn, 
@@ -64,7 +63,7 @@ let minimax ?(max_depth = 10) ?(player = Us) board =
     let moves_and_scores =
       List.map (fun c -> (c, score_fn (move b c p))) moves
     in
-    let le (_, (score1, _)) (_, (score2, _)) = (score1 : float) <= score2 in
+    let le (_, score1) (_, score2) = (score1 : float) <= score2 in
 
     match p with
     | Us -> max_of_list ~le moves_and_scores

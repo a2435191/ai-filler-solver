@@ -129,6 +129,13 @@ let move old new_color p =
   fill (to_corner p);
   check_inv new_
 
+type game_state = Win | Loss | Tie | Not_done
+
+let end_state us opp =
+  if us > squares_to_tie then Win
+  else if opp > squares_to_tie then Loss
+  else if us = opp && us + opp = total_squares then Tie
+  else Not_done
+
 let is_done us opp =
-  us > squares_to_tie || opp > squares_to_tie
-  || (us = opp && us + opp = total_squares)
+  match end_state us opp with Not_done -> false | Win | Loss | Tie -> true
