@@ -12,20 +12,21 @@ let string =
     ⬛🟨🟩🟥🟦🟥🟩🟨 |}
 
 let board = parse string
-let () = print board
-let () = print_newline ()
+(* let () = print board
+let () = print_newline () *)
 
 let strategies =
   [
     (* minimax 0;
-    minimax 1;
+    minimax 1; *)
     minimax 5;
-    minimax 10; *)
-    random;
-    greedy Minimax.heuristic "default";
+    (* minimax 10; *)
+    (* random; *)
+    (* greedy Minimax.heuristic "default"; *)
   ]
 
-let results = head_to_head ~trials:10 ~boards:(fun _ -> board) strategies
+(* TODO: we could consider caching moves here *)
+let results = head_to_head ~trials:1 ~boards:(fun _ -> board) strategies
 let () = print_results results
 
 (* let board' = move board Color.Red Opp
