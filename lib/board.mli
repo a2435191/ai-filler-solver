@@ -47,7 +47,12 @@ val move : t -> Color.t -> Player.t -> t
 (** [move board color player] computes the new board if player [player] makes
     move [color] on board [board] *)
 
-type game_state = Win | Loss | Tie | Not_done
+type game_state =
+  | Win  (** A win for [Us] *)
+  | Loss  (** A win for [Opp], loss for [Us] *)
+  | Tie  (** [Us] and [Opp] both have exactly [squares_to_tie] tiles *)
+  | Not_done
+      (** At this state, there's not a guaranteed win or a guaranteed tie *)
 
 val end_state : int -> int -> game_state
 (** [end_state us_size opp_size] *)
