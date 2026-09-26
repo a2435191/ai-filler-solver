@@ -53,8 +53,7 @@ let random =
         List.nth (Board.valid_moves b) i);
   }
 
-(* [greedy Minimax.heuristic _] Should be the same as [minimax 0] *)
-let greedy (eval : Board.t -> float) name =
+let greedy_of_fn name (eval : Board.t -> float) =
   {
     name = "greedy-" ^ name;
     f =
@@ -71,6 +70,12 @@ let greedy (eval : Board.t -> float) name =
         in
         best);
   }
+
+let greedy =
+  greedy_of_fn "minimax-heuristic" (fun b ->
+      let us = Board.region_size b Us in
+      let opp = Board.region_size b Opp in
+      Minimax.heuristic us opp 0)
 
 (* let cartesian_product l1 l2 =
   List.concat_map (fun a -> List.map (Pair.make a) l2) l1 *)
