@@ -3,7 +3,7 @@ open Board
 open Head2head
 
 let string =
-  {|🟪🟥🟦⬛🟪🟦🟥🟥                   
+  {|🟪🟥🟦⬛🟪🟦🟩🟥                   
     🟦🟨🟩🟨🟥⬛🟦⬛
     🟥🟩🟦🟥⬛🟩⬛🟦
     🟪🟥🟩🟦🟪🟥🟩⬛
