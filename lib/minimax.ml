@@ -2,6 +2,8 @@ open Constants
 open Board
 open Player
 
+let won_score = 10000.0
+
 (** [heuristic board] evaluates how good/bad the position [board] is. + means
     good for [Us], - means good for [Opp]. [infinity]/[neg_infinity] is used to
     denote a state in which we are/the opponent is guaranteed to win,
@@ -14,8 +16,9 @@ let heuristic b =
   assert (opp > 0);
   assert (us + opp <= total_squares);
 
-  if us > squares_to_tie then infinity
-  else if opp > squares_to_tie then neg_infinity
+  if us > squares_to_tie then won_score +. float_of_int (us - opp)
+  else if opp > squares_to_tie then -.won_score -. float_of_int (opp - us)
+  else if us = squares_to_tie && opp = squares_to_tie then 0.0
   else float_of_int (us - opp)
 
 (** [max_of_list ~le lst] computes the maximum element of [lst], where
