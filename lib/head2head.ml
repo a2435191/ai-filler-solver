@@ -81,6 +81,11 @@ let run_round us opp start_board =
   let rec go b player plies =
     let us_score = region_size b Us in
     let opp_score = region_size b Opp in
+    (* Printf.printf "%d-%d (%d, %s turn)\n" us_score opp_score plies
+      (match player with Us -> "our" | Opp -> "opponent's");
+    Board.print b;
+    print_newline ();
+    flush stdout; *)
     (* TODO we could have them run full games instead of terminating when there's a winner *)
     if is_done us_score opp_score then
       check_result_inv
@@ -95,16 +100,13 @@ let run_round us opp start_board =
 
   go start_board Us 0
 
-let head_to_head ?(trials = 5)
-    ?(boards =
-      let b = Board.random () in
-      fun (_ : unit) -> b) strategies =
+let head_to_head ?(trials = 5) ?(boards = fun _ -> Board.random ()) strategies =
   let strategies = List.to_seq strategies in
   Seq.concat_map
     (fun (us, opp) ->
       Seq.init trials
-        (* TODO: have these happen over multiple threads *) (fun _ ->
-          run_round us opp (boards ())))
+        (* TODO: have these happen over multiple threads *) (fun i ->
+          run_round us opp (boards i)))
     (Seq.product strategies strategies)
 
 let print_results =
