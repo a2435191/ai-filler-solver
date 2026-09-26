@@ -69,10 +69,18 @@ let parse str =
   |> List.filter (fun s -> not (String.trim s = ""))
   |> List.rev |> List.map parse_line |> Array.of_list |> check_inv
 
+let is_valid_move_impl us_c op_c c =
+  Color.((not (equal c us_c)) && not (equal c op_c))
+
+let is_valid_move b c =
+  let us = get_corner b Us in
+  let op = get_corner b Opp in
+  is_valid_move_impl us op c
+
 let valid_moves b =
   let us = get_corner b Us in
   let op = get_corner b Opp in
-  Color.(List.filter (fun c -> (not (equal c us)) && not (equal c op)) all)
+  Color.(List.filter (is_valid_move_impl us op) all)
 
 (** [neighbors (y, x)] returns all the 4-neighbors
     [(y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)] that fit on the board, i.e.
@@ -120,3 +128,7 @@ let move old new_color p =
 
   fill (to_corner p);
   check_inv new_
+
+let is_done us opp =
+  us > squares_to_tie || opp > squares_to_tie
+  || (us = opp && us + opp = total_squares)
