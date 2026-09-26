@@ -1,6 +1,8 @@
-type strategy = { name : string; f : Board.t -> Player.t -> Color.t }
+open Board
+
+type strategy = { name : string; f : Board.t -> player -> Color.t }
 (** Type of board AIs that select a move, one at a time *)
-(* TODO think about whether f should always take Player.t *)
+(* TODO think about whether f should always take player *)
 
 type result = {
   us : strategy;
@@ -24,14 +26,14 @@ let check_result_inv r =
   r
 
 let winner { us_score; opp_score } =
-  if us_score > opp_score then Some Player.Us
-  else if us_score < opp_score then Some Player.Opp
+  if us_score > opp_score then Some Us
+  else if us_score < opp_score then Some Opp
   else None
 
 let winner_string r =
   match winner r with
-  | Some Player.Us -> r.us.name
-  | Some Player.Opp -> r.opp.name
+  | Some Us -> r.us.name
+  | Some Opp -> r.opp.name
   | None -> "<tie>"
 
 (** [minimax max_depth] *)
@@ -77,7 +79,6 @@ let greedy (eval : Board.t -> float) name =
     and [opp] on initial board [board]. [us] goes first. *)
 let run_round us opp start_board =
   let open Board in
-  let open Player in
   let rec go b player plies =
     let us_score = region_size b Us in
     let opp_score = region_size b Opp in
@@ -95,7 +96,7 @@ let run_round us opp start_board =
       let c = strat.f b player in
       assert (is_valid_move b c);
       let board' = move b c player in
-      go board' (other player) (plies + 1)
+      go board' (other_player player) (plies + 1)
   in
 
   go start_board Us 0

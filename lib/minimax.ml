@@ -1,6 +1,5 @@
 open Constants
 open Board
-open Player
 
 let win_score = 10000.0
 
@@ -54,7 +53,7 @@ let minimax ?(max_depth = 10) ?(player = Us) board =
         (* we're at a leaf node or the game is done, so use the heuristic *)
         heuristic us_size opp_size fuel
       else
-        let _, us_score = go (fuel - 1) b (Player.other p) in
+        let _, us_score = go (fuel - 1) b (other_player p) in
         us_score
     in
 

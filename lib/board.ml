@@ -1,7 +1,13 @@
 open Constants
-open Player
 
 type t = Color.t array array
+type player = Us | Opp
+
+let player_to_corner = function
+  | Us -> (0, 0)
+  | Opp -> Constants.(height - 1, width - 1)
+
+let other_player = function Us -> Opp | Opp -> Us
 
 (* Internal info: a board is represented so that index [(y, x)] corresponds to 
   [y] squares above the bottom row and [x] to the right of the left column.
@@ -12,8 +18,8 @@ type t = Color.t array array
 
 let get board (y, x) = board.(y).(x)
 let set board (y, x) c = board.(y).(x) <- c
-let get_corner board p = get board (to_corner p)
-let set_corner board p c = set board (to_corner p) c
+let get_corner board p = get board (player_to_corner p)
+let set_corner board p c = set board (player_to_corner p) c
 
 (** The colors of board corners should never be the same *)
 let corner_colors_inv board =
@@ -105,7 +111,7 @@ let region_size b p =
       (neighbors (y, x))
       1
   in
-  count (to_corner p)
+  count (player_to_corner p)
 
 (** Deep copy *)
 let copy b = Array.(map copy) b
@@ -126,7 +132,7 @@ let move old new_color p =
           fill (y', x'))
   in
 
-  fill (to_corner p);
+  fill (player_to_corner p);
   check_inv new_
 
 type game_state = Win | Loss | Tie | Not_done
