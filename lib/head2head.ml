@@ -77,9 +77,6 @@ let greedy =
       let opp = Board.region_size b Opp in
       Minimax.heuristic us opp 0)
 
-(* let cartesian_product l1 l2 =
-  List.concat_map (fun a -> List.map (Pair.make a) l2) l1 *)
-
 (** [run_round us opp board] simulates a game between the two strategies [us]
     and [opp] on initial board [board]. [us] goes first. *)
 let run_round us opp start_board =
@@ -106,6 +103,10 @@ let run_round us opp start_board =
 
   go start_board Us 0
 
+(** Like [Seq.product] but in a specified order *)
+let cartesian_product s1 s2 =
+  Seq.concat_map (fun e -> Seq.map (Pair.make e) s2) s1
+
 let head_to_head ?(trials = 5) ?(boards = fun _ -> Board.random ()) strategies =
   let strategies = List.to_seq strategies in
   Seq.concat_map
@@ -113,7 +114,7 @@ let head_to_head ?(trials = 5) ?(boards = fun _ -> Board.random ()) strategies =
       Seq.init trials
         (* TODO: have these happen over multiple threads *) (fun i ->
           run_round us opp (boards i)))
-    (Seq.product strategies strategies)
+    (cartesian_product strategies strategies)
 
 let print_results =
   Seq.iter
