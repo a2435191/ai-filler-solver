@@ -6,10 +6,10 @@ let win_score = 10000.0
 (** [heuristic us_score opp_score fuel] evaluates how good/bad a game state with
     [us_score] many tiles controlled by [Us] and [opp_score] many controlled by
     [Opp] is. Additionally, for states where one player has already won, we use
-    [fuel] (plies remaining) as a bonus, to incentivize winning early. + means
-    good for [Us], - means good for [Opp]. This function is used when we don't
-    want to go deeper into the search tree, either because we're out of [fuel]
-    or because we're in a terminal state (see [Board.is_done]). *)
+    [fuel] (1 + plies remaining) as a bonus, to incentivize winning early. +
+    means good for [Us], - means good for [Opp]. This function is used when we
+    don't want to go deeper into the search tree, either because we're out of
+    [fuel] or because we're in a terminal state (see [Board.is_done]). *)
 let heuristic us opp fuel =
   assert (us > 0);
   assert (opp > 0);
@@ -36,16 +36,18 @@ let min_of_list ~le = max_of_list ~le:(Fun.flip le)
     https://wikipedia.org/wiki/Minimax#Minimax_algorithm_with_alternate_moves.
 
     Returns [(best_move, best_score)] for [player] (default: [Us]), searching at
-    most [max_depth] (default: [10]) layers deep. *)
+    most [max_depth] (default: [10]) moves deep. [max_depth] must therefore be
+    positive, since we always have to search for at least one move to return the
+    best move. *)
 let minimax ?(max_depth = 10) ?(player = Us) board =
-  if max_depth < 0 then
+  if max_depth <= 0 then
     raise
       (Invalid_argument
-         (Printf.sprintf "Expected max_depth >= 0, got %d instead" max_depth));
+         (Printf.sprintf "Expected max_depth > 0, got %d instead" max_depth));
 
-  (* Returns the best [(color, score)] for player [p] to make *)
+  (* Returns the best [(color, score)] for player [p] to make, with [fuel] search depth remaining *)
   let rec go fuel b p : Color.t * float =
-    assert (fuel >= 0);
+    assert (fuel >= 1);
     (* 4 available moves *)
     let moves = valid_moves b in
 
@@ -54,7 +56,7 @@ let minimax ?(max_depth = 10) ?(player = Us) board =
       let us_size = region_size b Us in
       let opp_size = region_size b Opp in
 
-      if fuel = 0 || Board.is_done us_size opp_size then
+      if fuel = 1 || Board.is_done us_size opp_size then
         (* we're at a leaf node or the game is done, so use the heuristic *)
         heuristic us_size opp_size fuel
       else
