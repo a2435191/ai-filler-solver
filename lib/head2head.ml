@@ -113,6 +113,8 @@ let head_to_head ?(trials = 5) ?(boards = fun _ -> Board.random ()) strategies =
     (fun (us, opp) ->
       Seq.init trials
         (* TODO: have these happen over multiple threads *) (fun i ->
+          Printf.eprintf "%s vs. %s trial %d\n" us.name opp.name i;
+          flush stderr;
           run_round us opp (boards i)))
     (cartesian_product strategies strategies)
 
