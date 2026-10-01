@@ -38,6 +38,11 @@ let min_of_list ~le = max_of_list ~le:(Fun.flip le)
     Returns [(best_move, best_score)] for [player] (default: [Us]), searching at
     most [max_depth] (default: [10]) layers deep. *)
 let minimax ?(max_depth = 10) ?(player = Us) board =
+  if max_depth < 0 then
+    raise
+      (Invalid_argument
+         (Printf.sprintf "Expected max_depth >= 0, got %d instead" max_depth));
+
   (* Returns the best [(color, score)] for player [p] to make *)
   let rec go fuel b p : Color.t * float =
     assert (fuel >= 0);
