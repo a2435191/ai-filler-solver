@@ -19,7 +19,7 @@ let heuristic us opp fuel =
   | Win -> win_score +. float_of_int fuel
   | Loss -> -.win_score -. float_of_int fuel
   | Tie -> 0.0
-  | Not_done -> float_of_int (us - opp)
+  | Not_done -> (* this is biased by whose turn it is *) float_of_int (us - opp)
 
 (** [max_of_list ~le lst] computes the maximum element of [lst], where
     comparison [<=] is done by the [le] function ([le x y] returns [true] iff
