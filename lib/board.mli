@@ -43,7 +43,13 @@ val parse : string -> t
 (** Parse a newline-delimited string as a board. Accepts the format output by
     [print], or letters for each of the colors (see [Color.from_string]) *)
 
-(* Compute information required for heuristic functions *)
+(* Compute information required for heuristic functions and AI strategies *)
+
+val is_valid_move : t -> Color.t -> bool
+(** Returns [true] for all six colors except those at the two player corners *)
+
+val valid_moves : t -> Color.t list
+(** Always four valid moves. See [is_valid_move] *)
 
 val region_size : t -> player -> int
 (** Count the size of the colored-in region starting at a corner (corresponding
@@ -52,3 +58,19 @@ val region_size : t -> player -> int
 val move : t -> Color.t -> player -> t
 (** [move board color player] computes the new board if player [player] makes
     move [color] on board [board] *)
+
+type game_state =
+  | Win  (** A win for [Us] *)
+  | Loss  (** A win for [Opp], loss for [Us] *)
+  | Tie  (** [Us] and [Opp] both have exactly [squares_to_tie] tiles *)
+  | Not_done
+      (** At this state, there's not a guaranteed win or a guaranteed tie *)
+
+val end_state : int -> int -> game_state
+(** [end_state us_size opp_size] *)
+
+val is_done : int -> int -> bool
+(** [is_done us_size opp_size] returns [true] iff the game has a known winner
+    (even if there are squares not yet captured), i.e. [us_size] or [opp_size]
+    is [> squares_to_tie], or if both players are tied and all squares are
+    captured *)

@@ -75,6 +75,19 @@ let parse str =
   |> List.filter (fun s -> not (String.trim s = ""))
   |> List.rev |> List.map parse_line |> Array.of_list |> check_inv
 
+let is_valid_move_impl us_c op_c c =
+  Color.((not (equal c us_c)) && not (equal c op_c))
+
+let is_valid_move b c =
+  let us = get_corner b Us in
+  let op = get_corner b Opp in
+  is_valid_move_impl us op c
+
+let valid_moves b =
+  let us = get_corner b Us in
+  let op = get_corner b Opp in
+  Color.(List.filter (is_valid_move_impl us op) all)
+
 (** [neighbors (y, x)] returns all the 4-neighbors
     [(y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)] that fit on the board, i.e.
     have first coordinate in [\[0, height)] and second coordinate in
@@ -121,3 +134,14 @@ let move old new_color p =
 
   fill (player_to_corner p);
   check_inv new_
+
+type game_state = Win | Loss | Tie | Not_done
+
+let end_state us opp =
+  if us > squares_to_tie then Win
+  else if opp > squares_to_tie then Loss
+  else if us = opp && us + opp = total_squares then Tie
+  else Not_done
+
+let is_done us opp =
+  match end_state us opp with Not_done -> false | Win | Loss | Tie -> true
