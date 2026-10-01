@@ -75,7 +75,7 @@ let greedy =
   greedy_of_fn "minimax-heuristic" (fun b ->
       let us = Board.region_size b Us in
       let opp = Board.region_size b Opp in
-      Minimax.heuristic us opp 0)
+      Minimax.heuristic us opp 1)
 
 (** [run_round us opp board] simulates a game between the two strategies [us]
     and [opp] on initial board [board]. [us] goes first. *)

@@ -15,7 +15,7 @@ let board = parse string
 
 (* let () = print board
 let () = print_newline () *)
-let strategies = [ minimax 0; minimax 1; minimax 5; minimax 10; random; greedy ]
+let strategies = [ minimax 1; minimax 5; minimax 10; random; greedy ]
 
 (* TODO: we could consider caching moves here *)
 let results = head_to_head ~trials:1 ~boards:(fun _ -> board) strategies
