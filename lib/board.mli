@@ -18,17 +18,9 @@ val other_player : player -> player
 val get : t -> int * int -> Color.t
 (** [get board (y, x)] returns the color of the square at index [(y, x)] *)
 
-val set : t -> int * int -> Color.t -> unit
-(** [set board (y, x) color] sets (in-place) the color of the square at index
-    [(y, x)] to [color] *)
-
 val get_corner : t -> player -> Color.t
 (** [get_corner board player] returns the color of the corner corresponding to
     [player] *)
-
-val set_corner : t -> player -> Color.t -> unit
-(** [set_corner board player color] sets the color of the corner corresponding
-    to [player] to [color] *)
 
 val check_inv : t -> t
 (** Return the input if it satisfies all the invariants, otherwise raise *)

@@ -17,8 +17,15 @@ let other_player = function Us -> Opp | Opp -> Us
   is flipped around the y-axis. *)
 
 let get board (y, x) = board.(y).(x)
+
+(** [set board (y, x) color] sets (in-place) the color of the square at index
+    [(y, x)] to [color] *)
 let set board (y, x) c = board.(y).(x) <- c
+
 let get_corner board p = get board (player_to_corner p)
+
+(** [set_corner board player color] sets the color of the corner corresponding
+    to [player] to [color] *)
 let set_corner board p c = set board (player_to_corner p) c
 
 (** The colors of board corners should never be the same *)
