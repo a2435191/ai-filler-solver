@@ -3,7 +3,7 @@ open Board
 
 (* TODO the game doesn't generate boards with adjacent tiles of the same color. We should do the same *)
 
-let random () =
+let random_squares () =
   let ret = Array.init_matrix height width (fun _ _ -> Color.random ()) in
   let us_y, us_x = player_to_corner Us in
   let us_color = ret.(us_y).(us_x) in
@@ -15,7 +15,7 @@ let random () =
     ret.(us_y).(us_x) <- Color.random_excluding us_color;
   ret
 
-let print board =
+let print_squares board =
   for i = height - 1 downto 0 do
     Array.iter (fun c -> print_string (Color.to_square c)) board.(i);
     print_newline ()
@@ -44,7 +44,7 @@ let parse_line line : Color.t array =
   in
   Array.of_list (go 0 [])
 
-let parse str =
+let parse_to_squares str =
   String.split_all ~sep:"\n" str
   |> List.filter (fun s -> not (String.trim s = ""))
   |> List.rev |> List.map parse_line |> Array.of_list

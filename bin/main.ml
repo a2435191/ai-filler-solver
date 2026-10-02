@@ -11,7 +11,7 @@ let string =
     🟪⬛🟦🟩🟥🟦🟪🟦
     ⬛🟨🟩🟥🟦🟥🟩🟨 |}
 
-let board = IO.parse string
+let board = IO.parse_to_squares string
 
 open Head2head
 
