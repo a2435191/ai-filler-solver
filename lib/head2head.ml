@@ -1,5 +1,5 @@
 module Make (M : Board.S) = struct
-  module BoardM = Board.Make (M)
+  module DerivedM = Board.Derived (M)
   module MinimaxM = Minimax.Make (M)
   module IOM = IO.Make (M)
   open M
@@ -55,7 +55,7 @@ module Make (M : Board.S) = struct
       f =
         (fun b _ ->
           let i = Random.int 4 in
-          List.nth (BoardM.valid_moves b) i);
+          List.nth (DerivedM.valid_moves b) i);
     }
 
   let greedy_of_fn name (eval : M.t -> float) =
@@ -63,7 +63,7 @@ module Make (M : Board.S) = struct
       name = "greedy-" ^ name;
       f =
         (fun b player ->
-          let moves = BoardM.valid_moves b in
+          let moves = DerivedM.valid_moves b in
           let moves_and_scores =
             List.map (fun c -> (c, eval (move b c player))) moves
           in
@@ -101,7 +101,7 @@ module Make (M : Board.S) = struct
       else
         let strat = match player with Us -> us | Opp -> opp in
         let c = strat.f b player in
-        assert (BoardM.is_valid_move b c);
+        assert (DerivedM.is_valid_move b c);
         let board' = move b c player in
         go board' (other_player player) (plies + 1)
     in

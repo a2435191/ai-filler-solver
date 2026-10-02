@@ -91,7 +91,7 @@ module type S = sig
       move [color] on board [board] *)
 end
 
-module Make (M : Get) = struct
+module Derived (M : Get) = struct
   (** [get_corner board player] returns the color of the corner corresponding to
       [player] *)
   let get_corner b p = M.get b (player_to_corner p)

@@ -16,7 +16,7 @@ let get board (y, x) = board.(y).(x)
 let height_inv board = Array.length board = height
 let width_inv board = Array.for_all (fun row -> Array.length row = width) board
 
-open Board.Make (struct
+open Board.Derived (struct
   type nonrec t = t
 
   let get = get

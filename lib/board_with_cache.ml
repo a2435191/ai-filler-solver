@@ -17,7 +17,7 @@ let get_corner_arr squares p =
   let y, x = player_to_corner p in
   squares.(y).(x)
 
-open Board.Make (struct
+open Board.Derived (struct
   type nonrec t = t
 
   let get = get
