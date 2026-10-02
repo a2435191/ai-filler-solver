@@ -91,6 +91,8 @@ module type S = sig
       move [color] on board [board] *)
 end
 
+(** Helper functions with common implementations, only depending on a [get]
+    function *)
 module Derived (M : Get) = struct
   (** [get_corner board player] returns the color of the corner corresponding to
       [player] *)
