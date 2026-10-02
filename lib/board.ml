@@ -48,14 +48,14 @@ type squares = Color.t array array
 
 let squares_get (squares : squares) (y, x) = squares.(y).(x)
 
-let region_size_of_squares b p =
+let region_size_of_squares squares p =
   let visited = Array.make_matrix height width false in
-  let c = squares_get b (player_to_corner p) in
+  let c = squares_get squares (player_to_corner p) in
   let rec count (y, x) =
     visited.(y).(x) <- true;
     List.fold_right
       (fun (y', x') acc ->
-        if (not visited.(y').(x')) && Color.equal b.(y').(x') c then
+        if (not visited.(y').(x')) && Color.equal squares.(y').(x') c then
           acc + count (y', x')
         else acc)
       (neighbors (y, x))
