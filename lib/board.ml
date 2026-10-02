@@ -47,21 +47,10 @@ module type S = sig
   val get : t -> int * int -> Color.t
   (** [get board (y, x)] returns the color of the square at index [(y, x)] *)
 
-  val get_corner : t -> player -> Color.t
-  (** [get_corner board player] returns the color of the corner corresponding to
-      [player] *)
-
   val check_inv : t -> t
   (** Return the input if it satisfies all the invariants, otherwise raise *)
 
   (* Compute information required for heuristic functions and AI strategies *)
-
-  val is_valid_move : t -> Color.t -> bool
-  (** Returns [true] for all six colors except those at the two player corners
-  *)
-
-  val valid_moves : t -> Color.t list
-  (** Always four valid moves. See [is_valid_move] *)
 
   val region_size : t -> player -> int
   (** Count the size of the colored-in region starting at a corner
@@ -70,4 +59,20 @@ module type S = sig
   val move : t -> Color.t -> player -> t
   (** [move board color player] computes the new board if player [player] makes
       move [color] on board [board] *)
+end
+
+module Make (M : S) = struct
+  include M
+
+  (** [get_corner board player] returns the color of the corner corresponding to
+      [player] *)
+  let get_corner b p = M.get b (player_to_corner p)
+
+  (** Returns [true] for all six colors except those at the two player corners
+  *)
+  let is_valid_move b c =
+    not (Color.equal c (get_corner b Us) || Color.equal c (get_corner b Opp))
+
+  (** Always four valid moves. See [is_valid_move] *)
+  let valid_moves b = List.filter (is_valid_move b) Color.all
 end

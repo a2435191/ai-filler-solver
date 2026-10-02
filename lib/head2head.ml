@@ -1,5 +1,5 @@
 module Make (M : Board.S) = struct
-  open M
+  open Board.Make (M)
   open Board
   open Minimax.Make (M)
   open IO.Make (M)

@@ -86,19 +86,6 @@ let of_squares squares =
 
 let to_squares { squares } = squares
 
-let is_valid_move_impl us_c op_c c =
-  Color.((not (equal c us_c)) && not (equal c op_c))
-
-let is_valid_move b c =
-  let us = get_corner b Us in
-  let op = get_corner b Opp in
-  is_valid_move_impl us op c
-
-let valid_moves b =
-  let us = get_corner b Us in
-  let op = get_corner b Opp in
-  Color.(List.filter (is_valid_move_impl us op) all)
-
 (** Deep copy *)
 let copy squares = Array.(map copy) squares
 
