@@ -65,7 +65,7 @@ module type S = sig
       move [color] on board [board] *)
 end
 
-module Make (M : S) = struct
+module Make (M : Get) = struct
   include M
 
   (** [get_corner board player] returns the color of the corner corresponding to
