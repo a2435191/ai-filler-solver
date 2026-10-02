@@ -28,12 +28,9 @@ let height_inv board = Array.length board.squares = height
 let width_inv board =
   Array.for_all (fun row -> Array.length row = width) board.squares
 
-(** Actually compute the region size when we don't already know it *)
-let region_size_naive squares p = Board_basic.region_size squares p
-
 (* Return the precomputed values *)
 let region_size b = function Us -> b.us_size | Opp -> b.opp_size
-let region_size_inv p b = region_size b p = region_size_naive b.squares p
+let region_size_inv p b = region_size b p = region_size_of_squares b.squares p
 
 let check_inv board =
   assert (corner_colors_inv board);
@@ -46,8 +43,8 @@ let check_inv board =
 let of_squares squares =
   {
     squares;
-    us_size = region_size_naive squares Us;
-    opp_size = region_size_naive squares Opp;
+    us_size = region_size_of_squares squares Us;
+    opp_size = region_size_of_squares squares Opp;
   }
 
 let to_squares { squares } = squares

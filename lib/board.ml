@@ -46,6 +46,23 @@ let neighbors (y, x) =
 
 type squares = Color.t array array
 
+let squares_get (squares : squares) (y, x) = squares.(y).(x)
+
+let region_size_of_squares b p =
+  let visited = Array.make_matrix height width false in
+  let c = squares_get b (player_to_corner p) in
+  let rec count (y, x) =
+    visited.(y).(x) <- true;
+    List.fold_right
+      (fun (y', x') acc ->
+        if (not visited.(y').(x')) && Color.equal b.(y').(x') c then
+          acc + count (y', x')
+        else acc)
+      (neighbors (y, x))
+      1
+  in
+  count (player_to_corner p)
+
 module type Get = sig
   type t
   (** The type of 7x8 game boards *)

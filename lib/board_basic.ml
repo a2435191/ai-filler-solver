@@ -29,20 +29,7 @@ let check_inv board =
   board
 
 (* this is combined with [move] in [board_with_cache.ml] *)
-let region_size b p =
-  let visited = Array.make_matrix height width false in
-  let c = get_corner b p in
-  let rec count (y, x) =
-    visited.(y).(x) <- true;
-    List.fold_right
-      (fun (y', x') acc ->
-        if (not visited.(y').(x')) && Color.equal b.(y').(x') c then
-          acc + count (y', x')
-        else acc)
-      (neighbors (y, x))
-      1
-  in
-  count (player_to_corner p)
+let region_size = region_size_of_squares
 
 (** Deep copy *)
 let copy b = Array.(map copy) b
