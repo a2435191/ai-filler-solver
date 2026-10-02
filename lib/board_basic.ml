@@ -18,18 +18,18 @@ let get board (y, x) = board.(y).(x)
     [(y, x)] to [color] *)
 let set board (y, x) c = board.(y).(x) <- c
 
-let get_corner board p = get board (player_to_corner p)
-
 (** [set_corner board player color] sets the color of the corner corresponding
     to [player] to [color] *)
 let set_corner board p c = set board (player_to_corner p) c
 
-(** The colors of board corners should never be the same *)
-let corner_colors_inv board =
-  not (Color.equal (get_corner board Us) (get_corner board Opp))
-
 let height_inv board = Array.length board = height
 let width_inv board = Array.for_all (fun row -> Array.length row = width) board
+
+open Board.Make (struct
+  type nonrec t = t
+
+  let get = get
+end)
 
 let check_inv board =
   assert (corner_colors_inv board);

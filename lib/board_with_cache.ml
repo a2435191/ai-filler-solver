@@ -21,8 +21,6 @@ let get_corner_arr squares p =
   let y, x = player_to_corner p in
   squares.(y).(x)
 
-let get_corner board p = get board (player_to_corner p)
-
 let set_corner_arr squares p c =
   let y, x = player_to_corner p in
   squares.(y).(x) <- c
@@ -31,9 +29,11 @@ let set_corner_arr squares p c =
     to [player] to [color] *)
 let set_corner board p c = set board (player_to_corner p) c
 
-(** The colors of board corners should never be the same *)
-let corner_colors_inv board =
-  not (Color.equal (get_corner board Us) (get_corner board Opp))
+open Board.Make (struct
+  type nonrec t = t
+
+  let get = get
+end)
 
 let height_inv board = Array.length board.squares = height
 
