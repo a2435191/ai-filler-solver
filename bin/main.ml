@@ -17,7 +17,7 @@ open Head2head
 
 (* let () = print board
 let () = print_newline () *)
-let strategies = [ (* minimax 1; minimax 5; minimax 10;  *) random ]
+let strategies = [ minimax 1; minimax 5; minimax 10; random; greedy ]
 
 (* TODO: we could consider caching moves here *)
 let results = head_to_head ~trials:1 ~boards:(fun _ -> board) strategies
