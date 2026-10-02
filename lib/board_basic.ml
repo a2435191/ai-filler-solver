@@ -37,51 +37,6 @@ let check_inv board =
   assert (width_inv board);
   board
 
-(* TODO the game doesn't generate boards with adjacent tiles of the same color. We should do the same *)
-let random () =
-  let ret = Array.init_matrix height width (fun _ _ -> Color.random ()) in
-  let our_color = get_corner ret Us in
-  if Color.equal our_color (get_corner ret Opp) then
-    set_corner ret Us (Color.random_excluding our_color);
-  check_inv ret
-
-let print board =
-  for i = height - 1 downto 0 do
-    Array.iter (fun c -> print_string (Color.to_square c)) board.(i);
-    print_newline ()
-  done
-
-let uchar_to_string u =
-  let buf = Buffer.create 4 in
-  Buffer.add_utf_8_uchar buf u;
-  Buffer.contents buf
-
-let parse_line line : Color.t array =
-  let len = String.length line in
-  let rec go i acc =
-    if i >= len then List.rev acc
-    else
-      let decoded = String.get_utf_8_uchar line i in
-      if Uchar.utf_decode_is_valid decoded then
-        let i' = i + Uchar.utf_decode_length decoded in
-        let s = decoded |> Uchar.utf_decode_uchar |> uchar_to_string in
-        if String.trim s = "" then go i' acc
-        else
-          let c = Color.from_string s in
-          go i' (c :: acc)
-      else raise (Invalid_argument ("Failed to parse line: " ^ line))
-  in
-  Array.of_list (go 0 [])
-
-let parse str =
-  String.split_all ~sep:"\n" str
-  |> List.filter (fun s -> not (String.trim s = ""))
-  |> List.rev |> List.map parse_line |> Array.of_list |> check_inv
-
-(** [neighbors (y, x)] returns all the 4-neighbors
-    [(y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)] that fit on the board, i.e.
-    have first coordinate in [\[0, height)] and second coordinate in
-    [\[0, width)] *)
 let neighbors (y, x) =
   [ (y + 1, x); (y - 1, x); (y, x + 1); (y, x - 1) ]
   |> List.filter (fun (y', x') ->
