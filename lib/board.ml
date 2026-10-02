@@ -70,6 +70,10 @@ module Make (M : Get) = struct
       [player] *)
   let get_corner b p = M.get b (player_to_corner p)
 
+  (** The colors of board corners should never be the same *)
+  let corner_colors_inv b =
+    not (Color.equal (get_corner b Us) (get_corner b Opp))
+
   (** Returns [true] for all six colors except those at the two player corners
   *)
   let is_valid_move b c =
