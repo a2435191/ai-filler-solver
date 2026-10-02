@@ -110,8 +110,7 @@ module Make (M : Board.S) = struct
   let cartesian_product s1 s2 =
     Seq.concat_map (fun e -> Seq.map (Pair.make e) s2) s1
 
-  let head_to_head ?(trials = 5) ?(boards = fun _ -> Board.random ()) strategies
-      =
+  let head_to_head ?(trials = 5) ?(boards = fun _ -> IO.random ()) strategies =
     let strategies = List.to_seq strategies in
     Seq.concat_map
       (fun (us, opp) ->
@@ -127,8 +126,8 @@ module Make (M : Board.S) = struct
       (fun { us; opp; us_score; opp_score; start_board; end_board; plies } ->
         Printf.printf "%s (%d) vs. %s (%d) in %d plies:\n" us.name us_score
           opp.name opp_score plies;
-        Board.print (to_squares start_board);
+        IO.print (to_squares start_board);
         Printf.printf "->\n";
-        Board.print (to_squares end_board);
+        IO.print (to_squares end_board);
         Printf.printf "\n\n")
 end
