@@ -1,8 +1,9 @@
 module Make (M : Board.S) = struct
-  open Board.Make (M)
+  module BoardM = Board.Make (M)
+  module MinimaxM = Minimax.Make (M)
+  module IOM = IO.Make (M)
+  open M
   open Board
-  open Minimax.Make (M)
-  open IO.Make (M)
 
   type strategy = { name : string; f : M.t -> player -> Color.t }
   (** Type of board AIs that select a move, one at a time *)
@@ -44,7 +45,7 @@ module Make (M : Board.S) = struct
   let minimax max_depth =
     {
       name = "minimax-" ^ string_of_int max_depth;
-      f = (fun b player -> fst (minimax ~max_depth ~player b));
+      f = (fun b player -> fst (MinimaxM.minimax ~max_depth ~player b));
     }
 
   (** Pick a random valid move *)
@@ -54,7 +55,7 @@ module Make (M : Board.S) = struct
       f =
         (fun b _ ->
           let i = Random.int 4 in
-          List.nth (valid_moves b) i);
+          List.nth (BoardM.valid_moves b) i);
     }
 
   let greedy_of_fn name (eval : M.t -> float) =
@@ -62,7 +63,7 @@ module Make (M : Board.S) = struct
       name = "greedy-" ^ name;
       f =
         (fun b player ->
-          let moves = valid_moves b in
+          let moves = BoardM.valid_moves b in
           let moves_and_scores =
             List.map (fun c -> (c, eval (move b c player))) moves
           in
@@ -100,7 +101,7 @@ module Make (M : Board.S) = struct
       else
         let strat = match player with Us -> us | Opp -> opp in
         let c = strat.f b player in
-        assert (is_valid_move b c);
+        assert (BoardM.is_valid_move b c);
         let board' = move b c player in
         go board' (other_player player) (plies + 1)
     in
@@ -128,8 +129,8 @@ module Make (M : Board.S) = struct
       (fun { us; opp; us_score; opp_score; start_board; end_board; plies } ->
         Printf.printf "%s (%d) vs. %s (%d) in %d plies:\n" us.name us_score
           opp.name opp_score plies;
-        print start_board;
+        IOM.print start_board;
         Printf.printf "->\n";
-        print end_board;
+        IOM.print end_board;
         Printf.printf "\n\n")
 end
