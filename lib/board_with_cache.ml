@@ -13,10 +13,6 @@ type t = { squares : squares; us_size : int; opp_size : int }
 
 let get board (y, x) = board.squares.(y).(x)
 
-let get_corner_arr squares p =
-  let y, x = player_to_corner p in
-  squares.(y).(x)
-
 open Board.Derived (struct
   type nonrec t = t
 
