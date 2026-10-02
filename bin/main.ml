@@ -1,6 +1,6 @@
 open Filler
-open Board
-open Head2head
+module Board = Board_with_cache
+module Head2head = Head2head.Make (Board)
 
 let string =
   {|🟪🟥🟦⬛🟪🟦🟩🟥                   
@@ -11,7 +11,9 @@ let string =
     🟪⬛🟦🟩🟥🟦🟪🟦
     ⬛🟨🟩🟥🟦🟥🟩🟨 |}
 
-let board = parse string
+let board = IO.parse_to_squares string
+
+open Head2head
 
 (* let () = print board
 let () = print_newline () *)

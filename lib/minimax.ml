@@ -1,5 +1,4 @@
 open Constants
-open Board
 
 let win_score = 10000.0
 
@@ -32,48 +31,52 @@ let max_of_list ~le = function
     according to [le]. *)
 let min_of_list ~le = max_of_list ~le:(Fun.flip le)
 
-(** The core minimax algorithm. See e.g.
-    https://wikipedia.org/wiki/Minimax#Minimax_algorithm_with_alternate_moves.
+module Make (M : Board.S) = struct
+  open Board.Make (M)
 
-    Returns [(best_move, best_score)] for [player] (default: [Us]), searching at
-    most [max_depth] (default: [10]) moves deep. [max_depth] must therefore be
-    positive, since we always have to search for at least one move to return the
-    best move. *)
-let minimax ?(max_depth = 10) ?(player = Us) board =
-  if max_depth <= 0 then
-    raise
-      (Invalid_argument
-         (Printf.sprintf "Expected max_depth > 0, got %d instead" max_depth));
+  (** The core minimax algorithm. See e.g.
+      https://wikipedia.org/wiki/Minimax#Minimax_algorithm_with_alternate_moves.
 
-  (* Returns the best [(color, score)] for player [p] to make, with [fuel] search depth remaining *)
-  let rec go fuel b p : Color.t * float =
-    assert (fuel >= 1);
-    (* 4 available moves *)
-    let moves = valid_moves b in
+      Returns [(best_move, best_score)] for [player] (default: [Us]), searching
+      at most [max_depth] (default: [10]) moves deep. [max_depth] must therefore
+      be positive, since we always have to search for at least one move to
+      return the best move. *)
+  let minimax ?(max_depth = 10) ?(player = Board.Us) board =
+    if max_depth <= 0 then
+      raise
+        (Invalid_argument
+           (Printf.sprintf "Expected max_depth > 0, got %d instead" max_depth));
 
-    (* what we use to evaluate moves *)
-    let score_fn b =
-      let us_size = region_size b Us in
-      let opp_size = region_size b Opp in
+    (* Returns the best [(color, score)] for player [p] to make, with [fuel] search depth remaining *)
+    let rec go fuel b p : Color.t * float =
+      assert (fuel >= 1);
+      (* 4 available moves *)
+      let moves = valid_moves b in
 
-      if fuel = 1 || Board.is_done us_size opp_size then
-        (* we're at a leaf node or the game is done, so use the heuristic *)
-        heuristic us_size opp_size fuel
-      else
-        let _, us_score = go (fuel - 1) b (other_player p) in
-        us_score
-    in
+      (* what we use to evaluate moves *)
+      let score_fn b =
+        let us_size = region_size b Us in
+        let opp_size = region_size b Opp in
 
-    (* Below, we get the move that scores the highest (helps [Us]) if it's our turn, 
+        if fuel = 1 || Board.is_done us_size opp_size then
+          (* we're at a leaf node or the game is done, so use the heuristic *)
+          heuristic us_size opp_size fuel
+        else
+          let _, us_score = go (fuel - 1) b (Board.other_player p) in
+          us_score
+      in
+
+      (* Below, we get the move that scores the highest (helps [Us]) if it's our turn, 
       otherwise the move that scores the lowest (helps [Opp])  *)
-    let moves_and_scores =
-      List.map (fun c -> (c, score_fn (move b c p))) moves
+      let moves_and_scores =
+        List.map (fun c -> (c, score_fn (move b c p))) moves
+      in
+      let le (_, score1) (_, score2) = (score1 : float) <= score2 in
+
+      match p with
+      | Us -> max_of_list ~le moves_and_scores
+      | Opp -> min_of_list ~le moves_and_scores
     in
-    let le (_, score1) (_, score2) = (score1 : float) <= score2 in
 
-    match p with
-    | Us -> max_of_list ~le moves_and_scores
-    | Opp -> min_of_list ~le moves_and_scores
-  in
-
-  go max_depth board player
+    go max_depth board player
+end
