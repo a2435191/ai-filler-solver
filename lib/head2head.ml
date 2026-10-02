@@ -85,7 +85,6 @@ module Make (M : Board.S) = struct
   (** [run_round us opp board] simulates a game between the two strategies [us]
       and [opp] on initial board [board]. [us] goes first. *)
   let run_round us opp start_board =
-    let open M in
     let rec go b player plies =
       let us_score = region_size b Us in
       let opp_score = region_size b Opp in
