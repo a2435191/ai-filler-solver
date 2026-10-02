@@ -35,6 +35,15 @@ let end_state us opp =
 let is_done us opp =
   match end_state us opp with Not_done -> false | Win | Loss | Tie -> true
 
+(** [neighbors (y, x)] returns all the 4-neighbors
+    [(y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)] that fit on the board, i.e.
+    have first coordinate in [\[0, height)] and second coordinate in
+    [\[0, width)] *)
+let neighbors (y, x) =
+  [ (y + 1, x); (y - 1, x); (y, x + 1); (y, x - 1) ]
+  |> List.filter (fun (y', x') ->
+      0 <= y' && y' < height && 0 <= x' && x' < width)
+
 type squares = Color.t array array
 
 module type Get = sig

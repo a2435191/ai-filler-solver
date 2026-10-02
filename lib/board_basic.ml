@@ -37,11 +37,6 @@ let check_inv board =
   assert (width_inv board);
   board
 
-let neighbors (y, x) =
-  [ (y + 1, x); (y - 1, x); (y, x + 1); (y, x - 1) ]
-  |> List.filter (fun (y', x') ->
-      0 <= y' && y' < height && 0 <= x' && x' < width)
-
 (* TODO this can be combined with `move` *)
 let region_size b p =
   let visited = Array.make_matrix height width false in

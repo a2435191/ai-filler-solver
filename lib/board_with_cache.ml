@@ -40,15 +40,6 @@ let height_inv board = Array.length board.squares = height
 let width_inv board =
   Array.for_all (fun row -> Array.length row = width) board.squares
 
-(** [neighbors (y, x)] returns all the 4-neighbors
-    [(y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)] that fit on the board, i.e.
-    have first coordinate in [\[0, height)] and second coordinate in
-    [\[0, width)] *)
-let neighbors (y, x) =
-  [ (y + 1, x); (y - 1, x); (y, x + 1); (y, x - 1) ]
-  |> List.filter (fun (y', x') ->
-      0 <= y' && y' < height && 0 <= x' && x' < width)
-
 (** Actually compute the region size when we don't already know it *)
 let region_size_naive squares p =
   let visited = Array.make_matrix height width false in
