@@ -48,3 +48,9 @@ let parse_to_squares str =
   String.split_all ~sep:"\n" str
   |> List.filter (fun s -> not (String.trim s = ""))
   |> List.rev |> List.map parse_line |> Array.of_list
+
+module Make (M : Board.S) = struct
+  let random () = M.of_squares (random_squares ())
+  let print board = print_squares (M.to_squares board)
+  let parse s = M.of_squares (parse_to_squares s)
+end
