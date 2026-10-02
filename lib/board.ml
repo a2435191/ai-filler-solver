@@ -37,15 +37,19 @@ let is_done us opp =
 
 type squares = Color.t array array
 
-module type S = sig
+module type Get = sig
   type t
   (** The type of 7x8 game boards *)
 
-  val of_squares : squares -> t
-  val to_squares : t -> squares
-
   val get : t -> int * int -> Color.t
   (** [get board (y, x)] returns the color of the square at index [(y, x)] *)
+end
+
+module type S = sig
+  include Get
+
+  val of_squares : squares -> t
+  val to_squares : t -> squares
 
   val check_inv : t -> t
   (** Return the input if it satisfies all the invariants, otherwise raise *)
