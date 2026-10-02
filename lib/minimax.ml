@@ -1,5 +1,4 @@
 open Constants
-open Board
 
 let win_score = 10000.0
 
@@ -32,7 +31,7 @@ let max_of_list ~le = function
     according to [le]. *)
 let min_of_list ~le = max_of_list ~le:(Fun.flip le)
 
-module Make (M : Board) = struct
+module Make (M : Board.S) = struct
   open M
 
   (** The core minimax algorithm. See e.g.
@@ -42,7 +41,7 @@ module Make (M : Board) = struct
       at most [max_depth] (default: [10]) moves deep. [max_depth] must therefore
       be positive, since we always have to search for at least one move to
       return the best move. *)
-  let minimax ?(max_depth = 10) ?(player = Us) board =
+  let minimax ?(max_depth = 10) ?(player = Board.Us) board =
     if max_depth <= 0 then
       raise
         (Invalid_argument
@@ -63,7 +62,7 @@ module Make (M : Board) = struct
           (* we're at a leaf node or the game is done, so use the heuristic *)
           heuristic us_size opp_size fuel
         else
-          let _, us_score = go (fuel - 1) b (other_player p) in
+          let _, us_score = go (fuel - 1) b (Board.other_player p) in
           us_score
       in
 

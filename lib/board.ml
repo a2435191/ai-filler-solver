@@ -91,7 +91,7 @@ let parse str : squares =
   |> List.filter (fun s -> not (String.trim s = ""))
   |> List.rev |> List.map parse_line |> Array.of_list
 
-module type Board = sig
+module type S = sig
   type t
   (** The type of 7x8 game boards *)
 

@@ -1,7 +1,6 @@
-open Board
-
-module Make (M : Board.Board) = struct
+module Make (M : Board.S) = struct
   open M
+  open Board
   module MinimaxM = Minimax.Make (M)
 
   type strategy = { name : string; f : M.t -> player -> Color.t }
