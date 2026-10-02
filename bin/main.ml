@@ -1,4 +1,5 @@
 open Filler
+open Board
 module Board = Board_basic
 module Head2head = Head2head.Make (Board)
 open Board

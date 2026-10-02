@@ -10,6 +10,8 @@ type t = Color.t array array
   Compared to how this is often done in games/general 2D arrays, this
   is flipped around the y-axis. *)
 
+let to_squares = Fun.id
+let of_squares = Fun.id
 let get board (y, x) = board.(y).(x)
 
 (** [set board (y, x) color] sets (in-place) the color of the square at index

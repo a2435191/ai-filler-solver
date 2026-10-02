@@ -1,10 +1,10 @@
 open Board
 
-module Make (Board : Board.Board) = struct
-  open Board
-  module MinimaxM = Minimax.Make (Board)
+module Make (M : Board.Board) = struct
+  open M
+  module MinimaxM = Minimax.Make (M)
 
-  type strategy = { name : string; f : Board.t -> player -> Color.t }
+  type strategy = { name : string; f : M.t -> player -> Color.t }
   (** Type of board AIs that select a move, one at a time *)
   (* TODO think about whether f should always take player *)
 
@@ -13,8 +13,8 @@ module Make (Board : Board.Board) = struct
     opp : strategy;
     us_score : int;
     opp_score : int;
-    start_board : Board.t;
-    end_board : Board.t;
+    start_board : M.t;
+    end_board : M.t;
     plies : int;
   }
 
@@ -54,17 +54,17 @@ module Make (Board : Board.Board) = struct
       f =
         (fun b _ ->
           let i = Random.int 4 in
-          List.nth (Board.valid_moves b) i);
+          List.nth (valid_moves b) i);
     }
 
-  let greedy_of_fn name (eval : Board.t -> float) =
+  let greedy_of_fn name (eval : M.t -> float) =
     {
       name = "greedy-" ^ name;
       f =
         (fun b player ->
-          let moves = Board.valid_moves b in
+          let moves = valid_moves b in
           let moves_and_scores =
-            List.map (fun c -> (c, eval (Board.move b c player))) moves
+            List.map (fun c -> (c, eval (move b c player))) moves
           in
           let le (_, score1) (_, score2) = (score1 : float) <= score2 in
           let best, _ =
@@ -77,14 +77,14 @@ module Make (Board : Board.Board) = struct
 
   let greedy =
     greedy_of_fn "minimax-heuristic" (fun b ->
-        let us = Board.region_size b Us in
-        let opp = Board.region_size b Opp in
+        let us = region_size b Us in
+        let opp = region_size b Opp in
         Minimax.heuristic us opp 1)
 
   (** [run_round us opp board] simulates a game between the two strategies [us]
       and [opp] on initial board [board]. [us] goes first. *)
   let run_round us opp start_board =
-    let open Board in
+    let open M in
     let rec go b player plies =
       let us_score = region_size b Us in
       let opp_score = region_size b Opp in
@@ -120,7 +120,7 @@ module Make (Board : Board.Board) = struct
           (* TODO: have these happen over multiple threads *) (fun i ->
             Printf.eprintf "%s vs. %s trial %d\n" us.name opp.name i;
             flush stderr;
-            run_round us opp (boards i)))
+            run_round us opp (M.of_squares (boards i))))
       (cartesian_product strategies strategies)
 
   let print_results =
@@ -128,8 +128,8 @@ module Make (Board : Board.Board) = struct
       (fun { us; opp; us_score; opp_score; start_board; end_board; plies } ->
         Printf.printf "%s (%d) vs. %s (%d) in %d plies:\n" us.name us_score
           opp.name opp_score plies;
-        Board.print start_board;
+        Board.print (to_squares start_board);
         Printf.printf "->\n";
-        Board.print end_board;
+        Board.print (to_squares end_board);
         Printf.printf "\n\n")
 end
