@@ -19,18 +19,18 @@ module Make (M : Board.S) = struct
     plies : int;
   }
 
-  let scores_inv { us_score; opp_score } =
+  let scores_inv { us_score; opp_score; _ } =
     us_score >= 0 && opp_score >= 0
     && us_score + opp_score <= Constants.total_squares
 
-  let turns_inv { plies } = plies >= 0
+  let turns_inv { plies; _ } = plies >= 0
 
   let check_result_inv r =
     assert (scores_inv r);
     assert (turns_inv r);
     r
 
-  let winner { us_score; opp_score } =
+  let winner { us_score; opp_score; _ } =
     if us_score > opp_score then Some Us
     else if us_score < opp_score then Some Opp
     else None

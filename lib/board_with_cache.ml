@@ -47,7 +47,7 @@ let of_squares squares =
     opp_size = region_size_of_squares squares Opp;
   }
 
-let to_squares { squares } = squares
+let to_squares { squares; _ } = squares
 
 (** Deep copy *)
 let copy squares = Array.(map copy) squares
