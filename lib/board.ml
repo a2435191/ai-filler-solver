@@ -1,3 +1,5 @@
+open Constants
+
 (* Supporting types and basic helper functions *)
 
 (** There are two players in the game, and we represent the player that we're
@@ -7,9 +9,7 @@ type player =
   | Opp  (** The player that we're trying to help lose *)
 
 (** Return [(0, 0)] for [Us], [(height - 1, width - 1)] for [Opp] *)
-let player_to_corner = function
-  | Us -> (0, 0)
-  | Opp -> Constants.(height - 1, width - 1)
+let player_to_corner = function Us -> (0, 0) | Opp -> (height - 1, width - 1)
 
 (** The other player, i.e. [Us -> Opp] and [Opp -> Us] *)
 let other_player = function Us -> Opp | Opp -> Us
@@ -23,7 +23,6 @@ type game_state =
 
 (** [end_state us_size opp_size] *)
 let end_state us opp =
-  let open Constants in
   if us > squares_to_tie then Win
   else if opp > squares_to_tie then Loss
   else if us = opp && us + opp = total_squares then Tie
@@ -42,10 +41,7 @@ type squares = Color.t array array
 
 (** Return a uniform random board *with corners of different colors* *)
 let random () : squares =
-  let ret =
-    Array.init_matrix Constants.height Constants.width (fun _ _ ->
-        Color.random ())
-  in
+  let ret = Array.init_matrix height width (fun _ _ -> Color.random ()) in
   let us_y, us_x = player_to_corner Us in
   let us_color = ret.(us_y).(us_x) in
   let opp_color =
@@ -58,7 +54,7 @@ let random () : squares =
 
 (** Pretty-print board to stdout *)
 let print (board : squares) =
-  for i = Constants.height - 1 downto 0 do
+  for i = height - 1 downto 0 do
     Array.iter (fun c -> print_string (Color.to_square c)) board.(i);
     print_newline ()
   done
