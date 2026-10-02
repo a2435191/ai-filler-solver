@@ -1,15 +1,8 @@
 open Constants
+open Board
 
-type t = { squares : Color.t array array; us_size : int; opp_size : int }
+type t = { squares : squares; us_size : int; opp_size : int }
 (** A game board grid and the cached region sizes for each player *)
-
-type player = Us | Opp
-
-let player_to_corner = function
-  | Us -> (0, 0)
-  | Opp -> Constants.(height - 1, width - 1)
-
-let other_player = function Us -> Opp | Opp -> Us
 
 (* Internal info: a board is represented so that index [(y, x)] corresponds to 
   [y] squares above the bottom row and [x] to the right of the left column.
@@ -78,54 +71,14 @@ let region_size_naive squares p =
   in
   count (player_to_corner p)
 
-let of_array squares =
+let of_squares squares =
   {
     squares;
     us_size = region_size_naive squares Us;
     opp_size = region_size_naive squares Opp;
   }
 
-(* TODO the game doesn't generate boards with adjacent tiles of the same color. We should do the same *)
-let random () =
-  let squares = Array.init_matrix height width (fun _ _ -> Color.random ()) in
-  let our_color = get_corner_arr squares Us in
-  let opp_color = get_corner_arr squares Opp in
-  if Color.equal our_color opp_color then
-    set_corner_arr squares Us (Color.random_excluding our_color);
-  check_inv (of_array squares)
-
-let print board =
-  for i = height - 1 downto 0 do
-    Array.iter (fun c -> print_string (Color.to_square c)) board.squares.(i);
-    print_newline ()
-  done
-
-let uchar_to_string u =
-  let buf = Buffer.create 4 in
-  Buffer.add_utf_8_uchar buf u;
-  Buffer.contents buf
-
-let parse_line line : Color.t array =
-  let len = String.length line in
-  let rec go i acc =
-    if i >= len then List.rev acc
-    else
-      let decoded = String.get_utf_8_uchar line i in
-      if Uchar.utf_decode_is_valid decoded then
-        let i' = i + Uchar.utf_decode_length decoded in
-        let s = decoded |> Uchar.utf_decode_uchar |> uchar_to_string in
-        if String.trim s = "" then go i' acc
-        else
-          let c = Color.from_string s in
-          go i' (c :: acc)
-      else raise (Invalid_argument ("Failed to parse line: " ^ line))
-  in
-  Array.of_list (go 0 [])
-
-let parse str =
-  String.split_all ~sep:"\n" str
-  |> List.filter (fun s -> not (String.trim s = ""))
-  |> List.rev |> List.map parse_line |> Array.of_list |> of_array |> check_inv
+let to_squares { squares } = squares
 
 let is_valid_move_impl us_c op_c c =
   Color.((not (equal c us_c)) && not (equal c op_c))
@@ -180,14 +133,3 @@ let move old new_color p =
       us_size = (match p with Us -> !new_color_count | Opp -> old.us_size);
       opp_size = (match p with Opp -> !new_color_count | Us -> old.us_size);
     }
-
-type game_state = Win | Loss | Tie | Not_done
-
-let end_state us opp =
-  if us > squares_to_tie then Win
-  else if opp > squares_to_tie then Loss
-  else if us = opp && us + opp = total_squares then Tie
-  else Not_done
-
-let is_done us opp =
-  match end_state us opp with Not_done -> false | Win | Loss | Tie -> true
