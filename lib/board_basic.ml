@@ -13,15 +13,6 @@ type t = Color.t array array
 let to_squares = Fun.id
 let of_squares = Fun.id
 let get board (y, x) = board.(y).(x)
-
-(** [set board (y, x) color] sets (in-place) the color of the square at index
-    [(y, x)] to [color] *)
-let set board (y, x) c = board.(y).(x) <- c
-
-(** [set_corner board player color] sets the color of the corner corresponding
-    to [player] to [color] *)
-let set_corner board p c = set board (player_to_corner p) c
-
 let height_inv board = Array.length board = height
 let width_inv board = Array.for_all (fun row -> Array.length row = width) board
 

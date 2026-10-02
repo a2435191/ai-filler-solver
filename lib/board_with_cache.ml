@@ -13,21 +13,9 @@ type t = { squares : squares; us_size : int; opp_size : int }
 
 let get board (y, x) = board.squares.(y).(x)
 
-(** [set board (y, x) color] sets (in-place) the color of the square at index
-    [(y, x)] to [color] *)
-let set board (y, x) c = board.squares.(y).(x) <- c
-
 let get_corner_arr squares p =
   let y, x = player_to_corner p in
   squares.(y).(x)
-
-let set_corner_arr squares p c =
-  let y, x = player_to_corner p in
-  squares.(y).(x) <- c
-
-(** [set_corner board player color] sets the color of the corner corresponding
-    to [player] to [color] *)
-let set_corner board p c = set board (player_to_corner p) c
 
 open Board.Make (struct
   type nonrec t = t
