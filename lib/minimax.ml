@@ -32,6 +32,7 @@ let max_of_list ~le = function
 let min_of_list ~le = max_of_list ~le:(Fun.flip le)
 
 module Make (M : Board.S) = struct
+  open M
   open Board.Make (M)
 
   (** The core minimax algorithm. See e.g.
