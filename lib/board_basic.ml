@@ -28,7 +28,7 @@ let check_inv board =
   assert (width_inv board);
   board
 
-(* TODO this can be combined with `move` *)
+(* this is combined with [move] in [board_with_cache.ml] *)
 let region_size b p =
   let visited = Array.make_matrix height width false in
   let c = get_corner b p in
