@@ -1,5 +1,5 @@
 open Filler
-module Board = Board_basic
+module Board = Board_with_cache
 module Head2head = Head2head.Make (Board)
 
 let string =
@@ -17,7 +17,7 @@ open Head2head
 
 (* let () = print board
 let () = print_newline () *)
-let strategies = [ minimax 1; minimax 5; minimax 10; random; greedy ]
+let strategies = [ (* minimax 1; minimax 5; minimax 10;  *) random ]
 
 (* TODO: we could consider caching moves here *)
 let results = head_to_head ~trials:1 ~boards:(fun _ -> board) strategies

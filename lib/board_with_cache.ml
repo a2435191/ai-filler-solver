@@ -135,5 +135,5 @@ let move old new_color p =
     {
       squares = new_squares;
       us_size = (match p with Us -> !new_color_count | Opp -> old.us_size);
-      opp_size = (match p with Opp -> !new_color_count | Us -> old.us_size);
+      opp_size = (match p with Opp -> !new_color_count | Us -> old.opp_size);
     }
