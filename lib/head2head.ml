@@ -1,7 +1,8 @@
 module Make (M : Board.S) = struct
   open M
   open Board
-  module MinimaxM = Minimax.Make (M)
+  open Minimax.Make (M)
+  open IO.Make (M)
 
   type strategy = { name : string; f : M.t -> player -> Color.t }
   (** Type of board AIs that select a move, one at a time *)
@@ -43,7 +44,7 @@ module Make (M : Board.S) = struct
   let minimax max_depth =
     {
       name = "minimax-" ^ string_of_int max_depth;
-      f = (fun b player -> fst (MinimaxM.minimax ~max_depth ~player b));
+      f = (fun b player -> fst (minimax ~max_depth ~player b));
     }
 
   (** Pick a random valid move *)
@@ -119,7 +120,7 @@ module Make (M : Board.S) = struct
           (* TODO: have these happen over multiple threads *) (fun i ->
             Printf.eprintf "%s vs. %s trial %d\n" us.name opp.name i;
             flush stderr;
-            run_round us opp (M.of_squares (boards i))))
+            run_round us opp (of_squares (boards i))))
       (cartesian_product strategies strategies)
 
   let print_results =
@@ -127,8 +128,8 @@ module Make (M : Board.S) = struct
       (fun { us; opp; us_score; opp_score; start_board; end_board; plies } ->
         Printf.printf "%s (%d) vs. %s (%d) in %d plies:\n" us.name us_score
           opp.name opp_score plies;
-        IO.print_squares (to_squares start_board);
+        print start_board;
         Printf.printf "->\n";
-        IO.print_squares (to_squares end_board);
+        print end_board;
         Printf.printf "\n\n")
 end
