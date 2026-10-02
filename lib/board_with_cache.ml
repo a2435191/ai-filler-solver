@@ -29,20 +29,7 @@ let width_inv board =
   Array.for_all (fun row -> Array.length row = width) board.squares
 
 (** Actually compute the region size when we don't already know it *)
-let region_size_naive squares p =
-  let visited = Array.make_matrix height width false in
-  let c = get_corner_arr squares p in
-  let rec count (y, x) =
-    visited.(y).(x) <- true;
-    List.fold_right
-      (fun (y', x') acc ->
-        if (not visited.(y').(x')) && Color.equal squares.(y').(x') c then
-          acc + count (y', x')
-        else acc)
-      (neighbors (y, x))
-      1
-  in
-  count (player_to_corner p)
+let region_size_naive squares p = Board_basic.region_size squares p
 
 (* Return the precomputed values *)
 let region_size b = function Us -> b.us_size | Opp -> b.opp_size
