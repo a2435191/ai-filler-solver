@@ -1,7 +1,7 @@
 open Constants
 open Board
 
-type t = Color.t array array
+type t = squares
 
 (* Internal info: a board is represented so that index [(y, x)] corresponds to 
   [y] squares above the bottom row and [x] to the right of the left column.

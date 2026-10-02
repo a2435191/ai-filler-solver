@@ -1,1 +1,1 @@
-include Board.S with type t = Color.t array array
+include Board.S with type t = Board.squares
