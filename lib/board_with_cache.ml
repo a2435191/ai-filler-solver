@@ -40,12 +40,6 @@ let height_inv board = Array.length board.squares = height
 let width_inv board =
   Array.for_all (fun row -> Array.length row = width) board.squares
 
-let check_inv board =
-  assert (corner_colors_inv board);
-  assert (height_inv board);
-  assert (width_inv board);
-  board
-
 (** [neighbors (y, x)] returns all the 4-neighbors
     [(y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)] that fit on the board, i.e.
     have first coordinate in [\[0, height)] and second coordinate in
@@ -71,6 +65,18 @@ let region_size_naive squares p =
   in
   count (player_to_corner p)
 
+(* Return the precomputed values *)
+let region_size b = function Us -> b.us_size | Opp -> b.opp_size
+let region_size_inv p b = region_size b p = region_size_naive b.squares p
+
+let check_inv board =
+  assert (corner_colors_inv board);
+  assert (height_inv board);
+  assert (width_inv board);
+  assert (region_size_inv Us board);
+  assert (region_size_inv Opp board);
+  board
+
 let of_squares squares =
   {
     squares;
@@ -92,8 +98,6 @@ let valid_moves b =
   let us = get_corner b Us in
   let op = get_corner b Opp in
   Color.(List.filter (is_valid_move_impl us op) all)
-
-let region_size b = function Us -> b.us_size | Opp -> b.opp_size
 
 (** Deep copy *)
 let copy squares = Array.(map copy) squares
