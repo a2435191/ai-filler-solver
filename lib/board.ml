@@ -35,47 +35,17 @@ let end_state us opp =
 let is_done us opp =
   match end_state us opp with Not_done -> false | Win | Loss | Tie -> true
 
-(** [neighbors (y, x)] returns all the 4-neighbors
-    [(y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)] that fit on the board, i.e.
-    have first coordinate in [\[0, height)] and second coordinate in
-    [\[0, width)] *)
-let neighbors (y, x) =
-  [ (y + 1, x); (y - 1, x); (y, x + 1); (y, x - 1) ]
-  |> List.filter (fun (y', x') ->
-      0 <= y' && y' < height && 0 <= x' && x' < width)
-
 type squares = Color.t array array
 
-let squares_get (squares : squares) (y, x) = squares.(y).(x)
-
-let region_size_of_squares squares p =
-  let visited = Array.make_matrix height width false in
-  let c = squares_get squares (player_to_corner p) in
-  let rec count (y, x) =
-    visited.(y).(x) <- true;
-    List.fold_right
-      (fun (y', x') acc ->
-        if (not visited.(y').(x')) && Color.equal squares.(y').(x') c then
-          acc + count (y', x')
-        else acc)
-      (neighbors (y, x))
-      1
-  in
-  count (player_to_corner p)
-
-module type Get = sig
+module type S = sig
   type t
   (** The type of 7x8 game boards *)
 
-  val get : t -> int * int -> Color.t
-  (** [get board (y, x)] returns the color of the square at index [(y, x)] *)
-end
-
-module type S = sig
-  include Get
-
   val of_squares : squares -> t
   val to_squares : t -> squares
+
+  val get : t -> int * int -> Color.t
+  (** [get board (y, x)] returns the color of the square at index [(y, x)] *)
 
   val check_inv : t -> t
   (** Return the input if it satisfies all the invariants, otherwise raise *)
@@ -91,16 +61,12 @@ module type S = sig
       move [color] on board [board] *)
 end
 
-(** Helper functions with common implementations, only depending on a [get]
-    function *)
-module Derived (M : Get) = struct
+module Make (M : S) = struct
+  include M
+
   (** [get_corner board player] returns the color of the corner corresponding to
       [player] *)
   let get_corner b p = M.get b (player_to_corner p)
-
-  (** The colors of board corners should never be the same *)
-  let corner_colors_inv b =
-    not (Color.equal (get_corner b Us) (get_corner b Opp))
 
   (** Returns [true] for all six colors except those at the two player corners
   *)

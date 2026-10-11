@@ -1,7 +1,4 @@
 (env
  (release
   (flags
-   (:standard -noassert)))
- (dev
-  (flags
-   (:standard -w +A-40-42-70))))
+   (:standard -noassert))))

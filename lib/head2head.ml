@@ -1,5 +1,5 @@
 module Make (M : Board.S) = struct
-  module DerivedM = Board.Derived (M)
+  module BoardM = Board.Make (M)
   module MinimaxM = Minimax.Make (M)
   module IOM = IO.Make (M)
   open M
@@ -19,18 +19,18 @@ module Make (M : Board.S) = struct
     plies : int;
   }
 
-  let scores_inv { us_score; opp_score; _ } =
+  let scores_inv { us_score; opp_score } =
     us_score >= 0 && opp_score >= 0
     && us_score + opp_score <= Constants.total_squares
 
-  let turns_inv { plies; _ } = plies >= 0
+  let turns_inv { plies } = plies >= 0
 
   let check_result_inv r =
     assert (scores_inv r);
     assert (turns_inv r);
     r
 
-  let winner { us_score; opp_score; _ } =
+  let winner { us_score; opp_score } =
     if us_score > opp_score then Some Us
     else if us_score < opp_score then Some Opp
     else None
@@ -55,7 +55,7 @@ module Make (M : Board.S) = struct
       f =
         (fun b _ ->
           let i = Random.int 4 in
-          List.nth (DerivedM.valid_moves b) i);
+          List.nth (BoardM.valid_moves b) i);
     }
 
   let greedy_of_fn name (eval : M.t -> float) =
@@ -63,7 +63,7 @@ module Make (M : Board.S) = struct
       name = "greedy-" ^ name;
       f =
         (fun b player ->
-          let moves = DerivedM.valid_moves b in
+          let moves = BoardM.valid_moves b in
           let moves_and_scores =
             List.map (fun c -> (c, eval (move b c player))) moves
           in
@@ -85,6 +85,7 @@ module Make (M : Board.S) = struct
   (** [run_round us opp board] simulates a game between the two strategies [us]
       and [opp] on initial board [board]. [us] goes first. *)
   let run_round us opp start_board =
+    let open M in
     let rec go b player plies =
       let us_score = region_size b Us in
       let opp_score = region_size b Opp in
@@ -100,7 +101,7 @@ module Make (M : Board.S) = struct
       else
         let strat = match player with Us -> us | Opp -> opp in
         let c = strat.f b player in
-        assert (DerivedM.is_valid_move b c);
+        assert (BoardM.is_valid_move b c);
         let board' = move b c player in
         go board' (other_player player) (plies + 1)
     in
