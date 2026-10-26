@@ -4,7 +4,18 @@ module V = Prover.Verifier (Board)
 module P = Prover.Minimax (Board)
 
 let () = Random.init 5
-let max_depth = int_of_string Sys.argv.(1)
+
+let max_depth =
+  match
+    Option.bind
+      (if Array.length Sys.argv = 2 then Some Sys.argv.(1) else None)
+      int_of_string_opt
+  with
+  | None ->
+      Printf.eprintf "Usage: ./prog <max_depth>\n";
+      exit 1
+  | Some x -> x
+
 let mk_boards n = List.init n (fun _ -> Board.of_squares (IO.random_squares ()))
 let n_boards = 50
 let boards = mk_boards n_boards
