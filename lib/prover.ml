@@ -11,7 +11,7 @@ let rec proof_size : single -> int = function
   | Done -> 1
   | UsMove (_, OppMove children) ->
       Iarray.fold_left ( + ) 1
-        (Iarray.map (Option.fold ~none:1 ~some:proof_size) children)
+        (Iarray.map (Option.fold ~none:0 ~some:proof_size) children)
 
 type certificate = { tree : single; min_tiles : int }
 (** A proof tree, starting at a move for [Us], and the claimed lower-bound on
