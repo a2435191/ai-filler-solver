@@ -47,7 +47,7 @@ let check is_treatment board =
   Printf.printf "%s         | %6d | %5d | %.3f | %.3f\n"
     (if accepted then "y" else "n")
     !visited_count proof_size prover_time verifier_time;
-  flush stderr;
+  flush stdout;
   {
     accepted;
     proof_size;
