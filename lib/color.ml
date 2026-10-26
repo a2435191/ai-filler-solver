@@ -1,10 +1,10 @@
 type t = Red | Green | Yellow | Blue | Purple | Black
 [@@deriving show, eq, enum]
 
-let all = [ Red; Green; Yellow; Blue; Purple; Black ]
-
 (** 6 *)
-let count = List.length all
+let count = max + 1
+
+let all = List.init count (fun i -> Option.get (of_enum i))
 
 let to_square = function
   | Red -> "🟥"
