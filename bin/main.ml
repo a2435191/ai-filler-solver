@@ -9,8 +9,8 @@ let n_boards = 50
 let boards = mk_boards n_boards
 
 let check is_treatment board =
-  let proof, guarantee = Prover.proof is_treatment board in
-  let out = Checker.check board proof guarantee in
+  let claim = Prover.proof is_treatment board in
+  let out = Checker.check board claim in
 
   Printf.eprintf "Checked (%b)\n" out;
   flush stderr;
