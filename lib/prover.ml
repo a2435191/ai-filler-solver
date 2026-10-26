@@ -54,16 +54,19 @@ end
 module Minimax (B : Board.S) = struct
   open Board.Make (B)
 
-  let prove ?(max_depth = 10) (greedy_us_prover : bool) (board : B.t) :
-      certificate =
+  let prove ?(max_depth = 10) ?(visited_count = ref 0) (greedy_us_prover : bool)
+      (board : B.t) : certificate =
     if max_depth <= 0 then
       invalid_arg
         (Printf.sprintf "Expected max_depth > 0, got %d instead" max_depth);
 
     let of_fn f = Iarray.of_list (List.map f Color.all) in
 
+    let incr () = incr visited_count in
+
     let rec go_us fuel board : single * int =
       assert (fuel >= 1);
+      incr ();
       if fuel = 1 then (Done, region_size board Us)
       else
         let moves = valid_moves board in
@@ -93,6 +96,7 @@ module Minimax (B : Board.S) = struct
         else (UsMove (c, next), min_tiles)
     and go_opp fuel board : multi * int =
       assert (fuel >= 1);
+      incr ();
       if fuel = 1 then
         ( OppMove
             (of_fn (fun c -> if is_valid_move board c then Some Done else None)),
