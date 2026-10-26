@@ -70,28 +70,28 @@ module Minimax (B : Board.S) = struct
       if fuel = 1 then (Done, region_size board Us)
       else
         let moves = valid_moves board in
-        let moves_and_scores =
+        let moves_and_proofs_and_scores =
           List.map (fun c -> (c, go_opp (fuel - 1) (move board c Us))) moves
         in
         let c, (next, min_tiles) =
           Minimax.max_of_list
             ~le:(fun (_, (_, t1)) (_, (_, t2)) -> t1 <= t2)
-            moves_and_scores
+            moves_and_proofs_and_scores
         in
 
         if greedy_us_prover then
           let moves_and_scores =
             List.map (fun c -> (c, region_size (move board c Us) Us)) moves
           in
-          (* Pick the greedy move *)
+          (* Pick the greedy move, but use the min_tiles from the proper strategy *)
           let c_greedy, _ =
             Minimax.max_of_list
               ~le:(fun (_, t1) (_, t2) -> t1 <= t2)
               moves_and_scores
           in
-
-          (* But use the min_tiles from the proper strategy *)
-          let next_greedy, _ = go_opp (fuel - 1) (move board c_greedy Us) in
+          let next_greedy, _ =
+            List.assoc c_greedy moves_and_proofs_and_scores
+          in
           (UsMove (c_greedy, next_greedy), min_tiles)
         else (UsMove (c, next), min_tiles)
     and go_opp fuel board : multi * int =
