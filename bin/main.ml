@@ -12,10 +12,30 @@ let string =
     🟪⬛🟦🟩🟥🟦🟪🟦
     ⬛🟨🟩🟥🟦🟥🟩🟨 |}
 
-let board = IO.parse_to_squares string |> Board.of_squares
-let proof, guarantee = Prover.proof board
-let result = Checker.check board proof guarantee
-let () = Printf.printf "%b\n" result
+let () = Random.init 5
+let mk_boards n = List.init n (fun _ -> Board.of_squares (IO.random_squares ()))
+let n_boards = 50
+let boards = mk_boards n_boards
+
+let check is_treatment board =
+  let proof, guarantee = Prover.proof is_treatment board in
+  let out = Checker.check board proof guarantee in
+
+  Printf.eprintf "Checked (%b)\n" out;
+  flush stderr;
+  out
+
+let count_accepted_proofs is_treatment =
+  let results = List.map (check is_treatment) boards in
+  List.length (List.filter Fun.id results)
+
+let () =
+  Printf.printf "Control (no cheating provers): %d/%d accepted\n"
+    (count_accepted_proofs false)
+    n_boards;
+  Printf.printf "Treatment (cheating provers): %d/%d accepted\n"
+    (count_accepted_proofs true)
+    n_boards
 
 (* let board' = move board Color.Red Opp
 let () = print board'

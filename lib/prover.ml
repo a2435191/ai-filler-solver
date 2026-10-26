@@ -43,7 +43,8 @@ end
 module Minimax (B : Board.S) = struct
   open Board.Make (B)
 
-  let proof ?(max_depth = 10) (board : B.t) : single * int =
+  let proof ?(max_depth = 10) (greedy_opp_prover : bool) (board : B.t) :
+      single * int =
     if max_depth <= 0 then
       invalid_arg
         (Printf.sprintf "Expected max_depth > 0, got %d instead" max_depth);
@@ -63,7 +64,22 @@ module Minimax (B : Board.S) = struct
             ~le:(fun (_, (_, t1)) (_, (_, t2)) -> t1 <= t2)
             moves_and_scores
         in
-        (UsMove (c, next), min_tiles)
+
+        if greedy_opp_prover then
+          let moves_and_scores =
+            List.map (fun c -> (c, region_size (move board c Us) Us)) moves
+          in
+          (* Pick the greedy move *)
+          let c_greedy, _ =
+            Minimax.max_of_list
+              ~le:(fun (_, t1) (_, t2) -> t1 <= t2)
+              moves_and_scores
+          in
+
+          (* But use the min_tiles from the proper strategy *)
+          let next_greedy, _ = go_opp (fuel - 1) (move board c_greedy Us) in
+          (UsMove (c_greedy, next_greedy), min_tiles)
+        else (UsMove (c, next), min_tiles)
     and go_opp fuel board : multi * int =
       assert (fuel >= 1);
       if fuel = 1 then
