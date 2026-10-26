@@ -3,15 +3,6 @@ module Board = Board_with_cache
 module Checker = Prover.Check (Board)
 module Prover = Prover.Minimax (Board)
 
-let string =
-  {|🟪🟥🟦⬛🟪🟦🟩🟥                   
-    🟦🟨🟩🟨🟥⬛🟦⬛
-    🟥🟩🟦🟥⬛🟩⬛🟦
-    🟪🟥🟩🟦🟪🟥🟩⬛
-    🟩🟦🟪⬛🟨⬛🟨🟪
-    🟪⬛🟦🟩🟥🟦🟪🟦
-    ⬛🟨🟩🟥🟦🟥🟩🟨 |}
-
 let () = Random.init 5
 let mk_boards n = List.init n (fun _ -> Board.of_squares (IO.random_squares ()))
 let n_boards = 50
@@ -36,13 +27,3 @@ let () =
   Printf.printf "Treatment (cheating provers): %d/%d accepted\n"
     (count_accepted_proofs true)
     n_boards
-
-(* let board' = move board Color.Red Opp
-let () = print board'
-let () = print_int (region_size board' Opp)
-let () = print_newline () *)
-(* let move, (score, done_) = Minimax.minimax board ~player:Opp ~max_depth:3 *)
-
-(* let () =
-  Printf.printf "Best move: %s. Score: %f. Done: %b\n" (Color.to_square move)
-    score done_ *)
