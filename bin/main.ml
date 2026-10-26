@@ -17,7 +17,7 @@ let max_depth =
   | Some x -> x
 
 let mk_boards n = List.init n (fun _ -> Board.of_squares (IO.random_squares ()))
-let n_boards = 50
+let n_boards = 200
 let boards = mk_boards n_boards
 
 type result = {
