@@ -7,20 +7,25 @@ type multi =
 
 and single = Done | UsMove of Color.t * multi  (** Make a move *)
 
+type certificate = { tree : single; min_tiles : int }
+(** A proof tree, starting at a move for [Us], and the claimed lower-bound on
+    squares captured for [Us] *)
+
 module Check (B : Board.S) = struct
   open Board.Make (B)
 
-  let check (board : B.t) (strategy : single) (min_tiles : int) : bool =
-    if min_tiles < 0 then
+  let check (board : B.t) (claim : certificate) : bool =
+    if claim.min_tiles < 0 then
       invalid_arg
-        (Printf.sprintf "min_tiles should be >= 0, got %d instead" min_tiles);
-    if min_tiles > Constants.total_squares then
+        (Printf.sprintf "min_tiles should be >= 0, got %d instead"
+           claim.min_tiles);
+    if claim.min_tiles > Constants.total_squares then
       invalid_arg
         (Printf.sprintf "min_tiles should be <= %d, got %d instead"
-           Constants.total_squares min_tiles);
+           Constants.total_squares claim.min_tiles);
 
     let rec go_single board : single -> bool = function
-      | Done -> region_size board Us >= min_tiles
+      | Done -> region_size board Us >= claim.min_tiles
       | UsMove (c, next) ->
           is_valid_move board c && go_multi (move board c Us) next
     and go_multi board : multi -> bool = function
@@ -36,7 +41,7 @@ module Check (B : Board.S) = struct
                Color.all
     in
 
-    go_single board strategy
+    go_single board claim.tree
 end
 
 (** Minimax except we don't reduce the min state *)
@@ -44,7 +49,7 @@ module Minimax (B : Board.S) = struct
   open Board.Make (B)
 
   let proof ?(max_depth = 10) (greedy_us_prover : bool) (board : B.t) :
-      single * int =
+      certificate =
     if max_depth <= 0 then
       invalid_arg
         (Printf.sprintf "Expected max_depth > 0, got %d instead" max_depth);
@@ -100,5 +105,6 @@ module Minimax (B : Board.S) = struct
                children) )
     in
 
-    go_us max_depth board
+    let tree, min_tiles = go_us max_depth board in
+    { tree; min_tiles }
 end
