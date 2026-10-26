@@ -1,6 +1,6 @@
 open Filler
 module Board = Board_with_cache
-module Checker = Prover.Check (Board)
+module Verifier = Prover.Verifier (Board)
 module Prover = Prover.Minimax (Board)
 
 let () = Random.init 5
@@ -9,8 +9,8 @@ let n_boards = 50
 let boards = mk_boards n_boards
 
 let check is_treatment board =
-  let claim = Prover.proof is_treatment board in
-  let out = Checker.check board claim in
+  let claim = Prover.prove is_treatment board in
+  let out = Verifier.verify board claim in
 
   Printf.eprintf "Checked (%b)\n" out;
   flush stderr;

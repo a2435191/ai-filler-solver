@@ -17,10 +17,10 @@ type certificate = { tree : single; min_tiles : int }
 (** A proof tree, starting at a move for [Us], and the claimed lower-bound on
     squares captured for [Us] *)
 
-module Check (B : Board.S) = struct
+module Verifier (B : Board.S) = struct
   open Board.Make (B)
 
-  let check (board : B.t) (claim : certificate) : bool =
+  let verify (board : B.t) (claim : certificate) : bool =
     if claim.min_tiles < 0 then
       invalid_arg
         (Printf.sprintf "min_tiles should be >= 0, got %d instead"
@@ -54,7 +54,7 @@ end
 module Minimax (B : Board.S) = struct
   open Board.Make (B)
 
-  let proof ?(max_depth = 10) (greedy_us_prover : bool) (board : B.t) :
+  let prove ?(max_depth = 10) (greedy_us_prover : bool) (board : B.t) :
       certificate =
     if max_depth <= 0 then
       invalid_arg
