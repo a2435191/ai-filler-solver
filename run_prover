@@ -1,0 +1,6 @@
+#!/bin/zsh
+
+mkdir -p prover_results
+for i in {1..10}; do 
+    dune exec filler $i > $(printf "prover_results/%02d.txt" $i)
+done
