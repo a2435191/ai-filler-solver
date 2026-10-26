@@ -4,6 +4,7 @@ module V = Prover.Verifier (Board)
 module P = Prover.Minimax (Board)
 
 let () = Random.init 5
+let max_depth = int_of_string Sys.argv.(1)
 let mk_boards n = List.init n (fun _ -> Board.of_squares (IO.random_squares ()))
 let n_boards = 50
 let boards = mk_boards n_boards
@@ -27,7 +28,7 @@ let header = "accepted? | V-cnt  | P-cnt   | P(s)| V(s)"
 let check is_treatment board =
   let visited_count = ref 0 in
   let claim, prover_time =
-    time (fun () -> P.prove ~visited_count is_treatment board)
+    time (fun () -> P.prove ~max_depth ~visited_count is_treatment board)
   in
   let proof_size = Prover.proof_size claim.tree in
   let accepted, verifier_time = time (fun () -> V.verify board claim) in
