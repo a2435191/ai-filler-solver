@@ -34,7 +34,7 @@ let time fn =
   let t1 = Sys.time () in
   (ret, t1 -. t0)
 
-let header = "accepted? |  P-cnt | V-cnt | P(s)  | V(s)"
+let header = "accepted? |  P-cnt | V-cnt | P(s)     | V(s)     "
 
 let check is_treatment board =
   let visited_count = ref 0 in
@@ -44,7 +44,7 @@ let check is_treatment board =
   let proof_size = Prover.proof_size claim.tree in
   let accepted, verifier_time = time (fun () -> V.verify board claim) in
 
-  Printf.printf "%s         | %6d | %5d | %.3f | %.3f\n"
+  Printf.printf "%s         | %6d | %5d | %.6f | %.6f\n"
     (if accepted then "y" else "n")
     !visited_count proof_size prover_time verifier_time;
   flush stdout;
