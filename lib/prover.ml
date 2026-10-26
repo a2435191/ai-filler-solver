@@ -1,8 +1,9 @@
 type multi =
-  | OppMove of (Color.t -> single option)
+  | OppMove of single option Iarray.t
       (** For a proof that a given strategy is at least so good, we have to show
           a proof for each of the [Opp]'s possible moves. Return None when a
-          color is the corner color *)
+          color is the corner color. This is effectively a function from [Color]
+          to [single option] (the array is indexed by [Color.to_enum]) *)
 
 and single = Done | UsMove of Color.t * multi  (** Make a move *)
 
@@ -24,13 +25,15 @@ module Check (B : Board.S) = struct
           is_valid_move board c && go_multi (move board c Us) next
     and go_multi board : multi -> bool = function
       | OppMove next ->
-          List.for_all
-            (fun c ->
-              match next c with
-              | Some single ->
-                  is_valid_move board c && go_single (move board c Opp) single
-              | None -> not (is_valid_move board c))
-            Color.all
+          Iarray.length next = Color.count
+          && List.for_all
+               (fun c ->
+                 match Iarray.get next (Color.to_enum c) with
+                 | Some single ->
+                     is_valid_move board c
+                     && go_single (move board c Opp) single
+                 | None -> not (is_valid_move board c))
+               Color.all
     in
 
     go_single board strategy
@@ -44,6 +47,8 @@ module Minimax (B : Board.S) = struct
     if max_depth <= 0 then
       invalid_arg
         (Printf.sprintf "Expected max_depth > 0, got %d instead" max_depth);
+
+    let of_fn f = Iarray.of_list (List.map f Color.all) in
 
     let rec go_us fuel board : single * int =
       assert (fuel >= 1);
@@ -62,20 +67,21 @@ module Minimax (B : Board.S) = struct
     and go_opp fuel board : multi * int =
       assert (fuel >= 1);
       if fuel = 1 then
-        ( OppMove (fun c -> if is_valid_move board c then Some Done else None),
+        ( OppMove
+            (of_fn (fun c -> if is_valid_move board c then Some Done else None)),
           region_size board Us )
       else
-        let multi c : (single * int) option =
-          if is_valid_move board c then
-            Some (go_us (fuel - 1) (move board c Opp))
-          else None
+        let children : (single * int) option Iarray.t =
+          of_fn (fun c ->
+              if is_valid_move board c then
+                Some (go_us (fuel - 1) (move board c Opp))
+              else None)
         in
-        ( OppMove (fun c -> Option.map fst (multi c)),
-          List.fold_left Int.min Constants.total_squares
-            (List.map
-               (fun c ->
-                 Option.fold ~none:Constants.total_squares ~some:snd (multi c))
-               Color.all) )
+        ( OppMove (Iarray.map (Option.map fst) children),
+          Iarray.fold_left Int.min Constants.total_squares
+            (Iarray.map
+               (Option.fold ~none:Constants.total_squares ~some:snd)
+               children) )
     in
 
     go_us max_depth board
