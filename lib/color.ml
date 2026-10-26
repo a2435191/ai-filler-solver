@@ -3,6 +3,9 @@ type t = Red | Green | Yellow | Blue | Purple | Black
 
 let all = [ Red; Green; Yellow; Blue; Purple; Black ]
 
+(** 6 *)
+let count = List.length all
+
 let to_square = function
   | Red -> "🟥"
   | Green -> "🟩"
