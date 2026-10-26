@@ -1,6 +1,7 @@
 open Filler
 module Board = Board_with_cache
-module Head2head = Head2head.Make (Board)
+module Checker = Prover.Check (Board)
+module Prover = Prover.Minimax (Board)
 
 let string =
   {|🟪🟥🟦⬛🟪🟦🟩🟥                   
@@ -11,17 +12,10 @@ let string =
     🟪⬛🟦🟩🟥🟦🟪🟦
     ⬛🟨🟩🟥🟦🟥🟩🟨 |}
 
-let board = IO.parse_to_squares string
-
-open Head2head
-
-(* let () = print board
-let () = print_newline () *)
-let strategies = [ minimax 1; minimax 5; minimax 10; random; greedy ]
-
-(* TODO: we could consider caching moves here *)
-let results = head_to_head ~trials:1 ~boards:(fun _ -> board) strategies
-let () = print_results results
+let board = IO.parse_to_squares string |> Board.of_squares
+let proof, guarantee = Prover.proof board
+let result = Checker.check board proof guarantee
+let () = Printf.printf "%b\n" result
 
 (* let board' = move board Color.Red Opp
 let () = print board'
