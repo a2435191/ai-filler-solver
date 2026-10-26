@@ -43,7 +43,7 @@ end
 module Minimax (B : Board.S) = struct
   open Board.Make (B)
 
-  let proof ?(max_depth = 10) (greedy_opp_prover : bool) (board : B.t) :
+  let proof ?(max_depth = 10) (greedy_us_prover : bool) (board : B.t) :
       single * int =
     if max_depth <= 0 then
       invalid_arg
@@ -65,7 +65,7 @@ module Minimax (B : Board.S) = struct
             moves_and_scores
         in
 
-        if greedy_opp_prover then
+        if greedy_us_prover then
           let moves_and_scores =
             List.map (fun c -> (c, region_size (move board c Us) Us)) moves
           in
