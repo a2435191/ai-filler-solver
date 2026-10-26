@@ -34,7 +34,7 @@ let time fn =
   let t1 = Sys.time () in
   (ret, t1 -. t0)
 
-let header = "accepted? | V-cnt  | P-cnt   | P(s)| V(s)"
+let header = "accepted? |  V-cnt | P-cnt | P(s)  | V(s)"
 
 let check is_treatment board =
   let visited_count = ref 0 in
@@ -57,17 +57,17 @@ let check is_treatment board =
   }
 
 let () =
-  Printf.printf "%s\n" header;
-
+  Printf.printf "Control:\n%s\n" header;
   let control_results = List.map (check false) boards in
-  Printf.printf "\n\n";
+
+  Printf.printf "\nTreatment:\n%s\n" header;
   let treatment_results = List.map (check true) boards in
 
   let n_accepted results =
     results |> List.filter (fun r -> r.accepted) |> List.length
   in
 
-  Printf.printf "\n\n";
+  Printf.printf "\n";
   Printf.printf "Control (no cheating provers): %d/%d accepted\n"
     (n_accepted control_results)
     n_boards;
