@@ -34,7 +34,7 @@ let time fn =
   let t1 = Sys.time () in
   (ret, t1 -. t0)
 
-let header = "accepted? |  V-cnt | P-cnt | P(s)  | V(s)"
+let header = "accepted? |  P-cnt | V-cnt | P(s)  | V(s)"
 
 let check is_treatment board =
   let visited_count = ref 0 in
