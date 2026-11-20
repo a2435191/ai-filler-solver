@@ -30,7 +30,7 @@ let random () = of_enum (Random.int_in_range ~min ~max) |> Option.get
 let random_excluding c =
   let i = Random.int_in_range ~min ~max:(max - 1) in
   let avoid = to_enum c in
-  (* i has the same range as {1..6} / {avoid}, up to a permutation *)
+  (* i has the same range as {0..5} / {avoid}, up to a permutation *)
   (* Remap any index at or above [avoid] by adding one *)
   let ret = Option.get (of_enum (if i < avoid then i else i + 1)) in
   assert (not (equal c ret));
