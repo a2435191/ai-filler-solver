@@ -28,11 +28,10 @@ let random () = of_enum (Random.int_in_range ~min ~max) |> Option.get
 
 (* [random_excluding c] returns a uniformly random color that is not [c]  *)
 let random_excluding c =
-  let i = Random.int_in_range ~min ~max in
-  (* Remap everything any index at or above c by adding one *)
-  let ret =
-    of_enum (if i = max then min else if i >= to_enum c then i + 1 else i)
-    |> Option.get
-  in
+  let i = Random.int_in_range ~min ~max:(max - 1) in
+  let avoid = to_enum c in
+  (* i has the same range as {1..6} / {avoid}, up to a permutation *)
+  (* Remap any index at or above [avoid] by adding one *)
+  let ret = Option.get (of_enum (if i < avoid then i else i + 1)) in
   assert (not (equal c ret));
   ret
