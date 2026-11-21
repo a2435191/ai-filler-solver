@@ -62,22 +62,47 @@ let check_inv board =
 
 let sorry () = assert false
 
+(** Flood-fill according to the graph given by the bits of [terrain] (as a 2D
+    grid), starting with nodes given by the bit(s) of [init] *)
+let fill terrain init =
+  let step curr =
+    (* Get all 4-neighbors of the bits in [curr] that are enabled in [terrain] *)
+    let mask_w = 0 in
+    let mask_e = 0 in
+    let mask_n = 0 in
+    let mask_s = 0 in
+    let mask = mask_w lor mask_e lor mask_n lor mask_s in
+    mask land terrain
+  in
+
+  (* loop until done *)
+  let rec go curr =
+    let next = step curr in
+    if next = curr then curr else go next
+  in
+
+  go init
+
 (** Return [(player_color, fill_region)] *)
-let flood_fill_region board player =
+let fill_board board player =
   let y, x = Board.player_to_corner player in
   let color_idx = get_enum board y x in
   let bits = board.(color_idx) in
   assert (get_bit y x bits);
 
-  (color_idx, sorry ())
+  let fill_init =
+    match player with Us -> 1 | Opp -> 1 lsl (total_squares - 1)
+  in
+
+  (color_idx, fill bits fill_init)
 
 let region_size board player =
-  let _, reachable = flood_fill_region board player in
+  let _, reachable = fill_board board player in
   Int.popcount reachable
 
 let move board color player =
   let out = Array.copy board in
-  let old_color_idx, reachable = flood_fill_region board player in
+  let old_color_idx, reachable = fill_board board player in
   let new_color_idx = Color.to_enum color in
 
   out.(old_color_idx) <- out.(old_color_idx) land lnot reachable;
