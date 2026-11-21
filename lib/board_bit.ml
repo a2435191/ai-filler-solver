@@ -60,8 +60,6 @@ let check_inv board =
   assert (at_most_one_color board);
   board
 
-let sorry () = assert false
-
 (** Flood-fill according to the graph given by the bits of [terrain] (as a 2D
     grid), starting with nodes given by the bit(s) of [init] *)
 let fill terrain init =
