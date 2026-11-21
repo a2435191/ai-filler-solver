@@ -44,12 +44,12 @@ let of_squares squares =
 let () = assert ((1 lsl total_squares) - 1 = 0xff_ff_ff_ff_ff_ff_ff)
 
 let at_least_one_color board =
-  let or'ed = List.fold_left ( lor ) 0 board in
+  let or'ed = Array.fold_left ( lor ) 0 board in
   or'ed = (1 lsl total_squares) - 1
 
 let at_most_one_color board =
   let _, ok =
-    List.fold_left
+    Array.fold_left
       (fun (prev, ok) curr -> (curr, ok && prev land curr = 0))
       (0, true) board
   in
