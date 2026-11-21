@@ -10,7 +10,7 @@ type t = int array
     Since an ocaml [int] has its lowest bit as a tag bit, we only have 63 bits,
     but that's enough *)
 
-(** size in bytes *)
+(* TODO could use 7 leftover bits to save the current player colors rather than having to loop to extract them *)
 
 let bit_idx y x = (y * width) + x
 
@@ -22,10 +22,10 @@ let set_bit y x bit bits =
   let i = bit_idx y x in
   if bit then bits lor (1 lsl i) else bits land lnot (1 lsl i)
 
-let get board (y, x) =
-  List.find (fun i -> get_bit y x board.(i)) Color.all_enum |> Color.of_enum_exc
+let get_enum board y x =
+  List.find (fun i -> get_bit y x board.(i)) Color.all_enum
 
-let sorry () = assert false
+let get board (y, x) = Color.of_enum_exc (get_enum board y x)
 
 let to_squares board =
   Array.init_matrix height width (fun y x -> get board (y, x))
@@ -60,5 +60,26 @@ let check_inv board =
   assert (at_most_one_color board);
   board
 
-let region_size board player = sorry ()
-let move = sorry ()
+let sorry () = assert false
+
+(** Return [(player_color, fill_region)] *)
+let flood_fill_region board player =
+  let y, x = Board.player_to_corner player in
+  let color_idx = get_enum board y x in
+  let bits = board.(color_idx) in
+  assert (get_bit y x bits);
+
+  (color_idx, sorry ())
+
+let region_size board player =
+  let _, reachable = flood_fill_region board player in
+  Int.popcount reachable
+
+let move board color player =
+  let out = Array.copy board in
+  let old_color_idx, reachable = flood_fill_region board player in
+  let new_color_idx = Color.to_enum color in
+
+  out.(old_color_idx) <- out.(old_color_idx) land lnot reachable;
+  out.(new_color_idx) <- out.(new_color_idx) lor reachable;
+  out
