@@ -1,0 +1,15 @@
+(version 0.5.0)
+
+(build
+ (all_platforms ((action (run dune build -p %{pkg-self:name} -j %{jobs})))))
+
+(depends
+ (all_platforms
+  (ocaml dune fmt)))
+
+(source
+ (fetch
+  (url
+   https://github.com/mirage/bechamel/releases/download/v0.5.0/bechamel-0.5.0.tbz)
+  (checksum
+   sha512=80af7d3015fd3e63514b6241190f7fc96a1329480d98526dc426c8e24fdf2f196917a9bdae72ac7234e21b2835c38a5ac989cfc00360d9530afe52f97f58c79f)))
