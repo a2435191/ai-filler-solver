@@ -6,7 +6,7 @@
      dune exec --profile release bin/bench.exe -- -depth 6 -only minimax
      dune exec --profile release bin/bench.exe -- -help
 
-   With no module names, every implementation in [impls] is benchmarked. The
+   With no module names, every implementation in [Impls.list] is benchmarked. The
    first module listed is the baseline for the "vs" column.
 
    Every module runs the same workloads on the same boards (fixed seed). Each
@@ -24,15 +24,10 @@ open Bechamel
 open Toolkit
 
 (* ------------------------------------------------------------------------ *)
-(* Implementations: add new ones here                                       *)
+(* Implementations: add new ones here or in [Impls.list]                    *)
 (* ------------------------------------------------------------------------ *)
 
-let impls : (string * (module Board.S)) list =
-  [
-    ("Board_basic", (module Board_basic));
-    ("Board_with_cache", (module Board_with_cache));
-    ("Board_bit", (module Board_bit));
-  ]
+let impls = Impls.list
 
 (* ------------------------------------------------------------------------ *)
 (* Shared workload data (identical for every implementation)                *)
