@@ -47,7 +47,7 @@ let of_squares squares =
   done;
   out
 
-let () = assert ((1 lsl total_squares) - 1 = 0xff_ff_ff_ff_ff_ff_ff)
+let () = assert ((1 lsl total_squares) - 1 = 0xFF_FF_FF_FF_FF_FF_FF)
 
 let at_least_one_color_inv board =
   let or'ed = Array.fold_left ( lor ) 0 board in
