@@ -43,11 +43,11 @@ let of_squares squares =
 
 let () = assert ((1 lsl total_squares) - 1 = 0xff_ff_ff_ff_ff_ff_ff)
 
-let at_least_one_color board =
+let at_least_one_color_inv board =
   let or'ed = Array.fold_left ( lor ) 0 board in
   or'ed = (1 lsl total_squares) - 1
 
-let at_most_one_color board =
+let at_most_one_color_inv board =
   let _, ok =
     Array.fold_left
       (fun (prev, ok) curr -> (curr, ok && prev land curr = 0))
@@ -55,13 +55,13 @@ let at_most_one_color board =
   in
   ok
 
-let no_high_bits board =
+let no_high_bits_inv board =
   Array.for_all (fun bits -> bits lsr total_squares = 0) board
 
 let check_inv board =
-  assert (at_least_one_color board);
-  assert (at_most_one_color board);
-  assert (no_high_bits board);
+  assert (at_least_one_color_inv board);
+  assert (at_most_one_color_inv board);
+  assert (no_high_bits_inv board);
   board
 
 (** Flood-fill according to the graph given by the bits of [terrain] (as a 2D
