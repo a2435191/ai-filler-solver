@@ -1,7 +1,7 @@
 open Constants
 
 type bits = int
-type t = bits array
+type t = { colors : bits array }
 
 (** A bitboard: There are 56 colored squares and 6 possible colors per square.
     Each color needing 3 or 4 bits would take 21 or 28 bytes, but instead I just
@@ -32,9 +32,11 @@ let get_enum board y x =
   (* List.find (fun i -> get_bit y x board.(i)) Color.all_enum *)
   let rec go i =
     assert (i <= Color.max);
-    if get_bit y x board.(i) then i else go (i + 1)
+    if get_bit y x board.colors.(i) then i else go (i + 1)
   in
   go 0
+
+let copy board = { colors = Array.copy board.colors }
 
 (* Impl *)
 
@@ -52,24 +54,24 @@ let of_squares squares =
       out.(color_idx) <- set_bit y x true out.(color_idx)
     done
   done;
-  out
+  { colors = out }
 
 let () = assert ((1 lsl total_squares) - 1 = 0xFF_FF_FF_FF_FF_FF_FF)
 
 let at_least_one_color_inv board =
-  let or'ed = Array.fold_left ( lor ) 0 board in
+  let or'ed = Array.fold_left ( lor ) 0 board.colors in
   or'ed = (1 lsl total_squares) - 1
 
 let at_most_one_color_inv board =
   let _, ok =
     Array.fold_left
       (fun (acc, ok) curr -> (acc lor curr, ok && acc land curr = 0))
-      (0, true) board
+      (0, true) board.colors
   in
   ok
 
 let no_high_bits_inv board =
-  Array.for_all (fun bits -> bits lsr total_squares = 0) board
+  Array.for_all (fun bits -> bits lsr total_squares = 0) board.colors
 
 let check_inv board =
   assert (at_least_one_color_inv board);
@@ -107,7 +109,7 @@ let fill terrain init =
 let fill_board board player =
   let y, x = Board.player_to_corner player in
   let color_idx = get_enum board y x in
-  let bits = board.(color_idx) in
+  let bits = board.colors.(color_idx) in
   assert (get_bit y x bits);
 
   let fill_init =
@@ -121,10 +123,10 @@ let region_size board player =
   Int.popcount reachable
 
 let move board color player =
-  let out = Array.copy board in
+  let out = Array.copy board.colors in
   let old_color_idx, reachable = fill_board board player in
   let new_color_idx = Color.to_enum color in
 
   out.(old_color_idx) <- out.(old_color_idx) land lnot reachable;
   out.(new_color_idx) <- out.(new_color_idx) lor reachable;
-  out
+  { colors = out }
