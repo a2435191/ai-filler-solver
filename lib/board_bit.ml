@@ -27,7 +27,12 @@ let set_bit y x bit bits =
   if bit then bits lor (1 lsl i) else bits land lnot (1 lsl i)
 
 let get_enum board y x =
-  List.find (fun i -> get_bit y x board.(i)) Color.all_enum
+  (* List.find (fun i -> get_bit y x board.(i)) Color.all_enum *)
+  let rec go i =
+    assert (i <= Color.max);
+    if get_bit y x board.(i) then i else go (i + 1)
+  in
+  go 0
 
 (* Impl *)
 
