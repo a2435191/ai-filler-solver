@@ -3,7 +3,7 @@
   (flags
    (:standard -noassert))
   (ocamlopt_flags
-   (:standard -O3)))
+   (:standard -O3 -unbox-closures)))
  (_
   (flags (:standard))
   (ocamlopt_flags
