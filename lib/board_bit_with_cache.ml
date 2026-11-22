@@ -1,7 +1,7 @@
 open Constants
 
 type bits = int
-type t = { colors : bits array }
+type t = { colors : bits array; us_color : Color.t; opp_color : Color.t }
 
 (** A bitboard: There are 56 colored squares and 6 possible colors per square.
     Each color needing 3 or 4 bits would take 21 or 28 bytes, but instead I just
@@ -32,15 +32,15 @@ let get_enum board y x =
   (* List.find (fun i -> get_bit y x board.(i)) Color.all_enum *)
   let rec go i =
     assert (i <= Color.max);
-    if get_bit y x board.colors.(i) then i else go (i + 1)
+    if get_bit y x board.(i) then i else go (i + 1)
   in
   go 0
 
-let copy board = { colors = Array.copy board.colors }
+let copy board = { board with colors = Array.copy board.colors }
 
 (* Impl *)
 
-let get board (y, x) = Color.of_enum_exc (get_enum board y x)
+let get board (y, x) = Color.of_enum_exc (get_enum board.colors y x)
 
 let to_squares board =
   Array.init_matrix height width (fun y x -> get board (y, x))
@@ -54,7 +54,12 @@ let of_squares squares =
       out.(color_idx) <- set_bit y x true out.(color_idx)
     done
   done;
-  { colors = out }
+  (* TODO clean this up *)
+  {
+    colors = out;
+    us_color = Color.of_enum_exc (get_enum out 0 0);
+    opp_color = Color.of_enum_exc (get_enum out (height - 1) (width - 1));
+  }
 
 let () = assert ((1 lsl total_squares) - 1 = 0xFF_FF_FF_FF_FF_FF_FF)
 
@@ -108,7 +113,7 @@ let fill terrain init =
 (** Return [(player_color, fill_region)] *)
 let fill_board board player =
   let y, x = Board.player_to_corner player in
-  let color_idx = get_enum board y x in
+  let color_idx = get_enum board.colors y x in
   let bits = board.colors.(color_idx) in
   assert (get_bit y x bits);
 
@@ -129,4 +134,6 @@ let move board color player =
 
   out.(old_color_idx) <- out.(old_color_idx) land lnot reachable;
   out.(new_color_idx) <- out.(new_color_idx) lor reachable;
-  { colors = out }
+  match player with
+  | Us -> { board with colors = out; us_color = color }
+  | Opp -> { board with colors = out; opp_color = color }
