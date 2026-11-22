@@ -63,17 +63,22 @@ let check_inv board =
 (** Flood-fill according to the graph given by the bits of [terrain] (as a 2D
     grid), starting with nodes given by the bit(s) of [init] *)
 let fill terrain init =
+  (* remove the first bit of each row (byte) *)
+  let no_l_col_mask = 0x7F_7F_7F_7F_7F_7F_7F in
+  (* remove the last bit of each row (byte) *)
+  let no_r_col_mask = 0xFE_FE_FE_FE_FE_FE_FE in
+
+  (* Get all 4-neighbors of the bits in [curr] that are enabled in [terrain] *)
   let step curr =
-    (* Get all 4-neighbors of the bits in [curr] that are enabled in [terrain] *)
-    let mask_w = 0 in
-    let mask_e = 0 in
-    let mask_n = 0 in
-    let mask_s = 0 in
+    let mask_w = (curr land no_l_col_mask) lsl 1 in
+    let mask_e = (curr land no_r_col_mask) lsr 1 in
+    let mask_n = curr lsl 8 in
+    let mask_s = curr lsr 8 in
     let mask = mask_w lor mask_e lor mask_n lor mask_s in
-    mask land terrain
+    curr lor (mask land terrain)
   in
 
-  (* loop until done *)
+  (* loop until fixed point *)
   let rec go curr =
     let next = step curr in
     if next = curr then curr else go next
