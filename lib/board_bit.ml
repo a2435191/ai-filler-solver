@@ -55,9 +55,13 @@ let at_most_one_color board =
   in
   ok
 
+let no_high_bits board =
+  Array.for_all (fun bits -> bits lsr total_squares = 0) board
+
 let check_inv board =
   assert (at_least_one_color board);
   assert (at_most_one_color board);
+  assert (no_high_bits board);
   board
 
 (** Flood-fill according to the graph given by the bits of [terrain] (as a 2D
