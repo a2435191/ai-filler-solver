@@ -34,34 +34,15 @@
        %{pkg-self:build-id}
        %{pkg-self:name}
        %{pkg:compiler-cloning:version}
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
        --prefix=%{prefix}
        --docdir=%{doc}/ocaml
        --with-additional-stublibsdir
        --with-relative-libdir
        --enable-runtime-search
        --enable-runtime-search-target=fallback
-       (when false "")
-       (when false "")
-       (when false "")
        (when
         (catch_undefined_var %{pkg:ocaml-option-flambda:installed} false)
         --enable-flambda)
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
        --disable-warn-error)))))
   ((((arch x86_64)
      (os macos))
@@ -80,36 +61,16 @@
        %{pkg-self:build-id}
        %{pkg-self:name}
        %{pkg:compiler-cloning:version}
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
        --prefix=%{prefix}
        --docdir=%{doc}/ocaml
        --with-additional-stublibsdir
        --with-relative-libdir
        --enable-runtime-search
        --enable-runtime-search-target=fallback
-       (when false "")
-       (when false "")
-       (when false "")
        (when
         (catch_undefined_var %{pkg:ocaml-option-flambda:installed} false)
         --enable-flambda)
-       (when false "")
-       (when false "")
-       (when false "")
        CC=cc
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
-       (when false "")
        --disable-warn-error)))))))
 
 (depends
