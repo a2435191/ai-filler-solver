@@ -26,9 +26,6 @@ let set_bit y x bit (bits : bits) : bits =
   let i = bit_idx y x in
   if bit then bits lor (1 lsl i) else bits land lnot (1 lsl i)
 
-let cached_color (player : Board.player) board =
-  match player with Us -> board.us_color | Opp -> board.opp_color
-
 let get_raw colors y x =
   let rec get_enum i =
     (* List.find (fun i -> get_bit y x board.(i)) Color.all_enum *)
@@ -39,7 +36,12 @@ let get_raw colors y x =
 
 (* Impl *)
 
+(** [get] is quite slow. We only cache the values for the corners *)
 let get board (y, x) = get_raw board.colors y x
+
+(** fast and cached *)
+let get_corner board player =
+  match player with Board.Us -> board.us_color | Opp -> board.opp_color
 
 let to_squares board =
   Array.init_matrix height width (fun y x -> get board (y, x))
@@ -110,7 +112,7 @@ let fill terrain init =
 
 let fill_board board player =
   let y, x = Board.player_to_corner player in
-  let color = cached_color player board in
+  let color = get_corner board player in
   let bits = board.colors.(Color.to_enum color) in
   assert (get_bit y x bits);
 
@@ -128,7 +130,7 @@ let move board new_color player =
   let out = Array.copy board.colors in
   let reachable = fill_board board player in
 
-  let old_color_idx = Color.to_enum (cached_color player board) in
+  let old_color_idx = Color.to_enum (get_corner board player) in
   let new_color_idx = Color.to_enum new_color in
   out.(old_color_idx) <- out.(old_color_idx) land lnot reachable;
   out.(new_color_idx) <- out.(new_color_idx) lor reachable;

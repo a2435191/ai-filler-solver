@@ -39,6 +39,7 @@ let get_enum board y x =
 (* Impl *)
 
 let get board (y, x) = Color.of_enum_exc (get_enum board y x)
+let get_corner board player = get board (Board.player_to_corner player)
 
 let to_squares board =
   Array.init_matrix height width (fun y x -> get board (y, x))
