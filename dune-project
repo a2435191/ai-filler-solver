@@ -22,7 +22,10 @@
    (= 5.5.1))
   dune
   (ppx_deriving
-   (= 6.2.0)))
+   (= 6.2.0))
+  (alcotest :with-test)
+  (qcheck-core :with-test)
+  (qcheck-alcotest :with-test))
  (tags
   ("add topics" "to describe" your project)))
 
