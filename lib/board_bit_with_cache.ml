@@ -12,8 +12,6 @@ type t = { colors : bits array; us_color : Color.t; opp_color : Color.t }
     Since an ocaml [int] has its lowest bit as a tag bit, we only have 63 bits,
     but that's enough *)
 
-(* TODO could use 7 leftover bits to save the current player colors rather than having to loop to extract them *)
-
 let () = assert (width = 8 && height = 7)
 
 (* Helpers *)
@@ -28,19 +26,20 @@ let set_bit y x bit (bits : bits) : bits =
   let i = bit_idx y x in
   if bit then bits lor (1 lsl i) else bits land lnot (1 lsl i)
 
-let get_enum board y x =
-  (* List.find (fun i -> get_bit y x board.(i)) Color.all_enum *)
-  let rec go i =
-    assert (i <= Color.max);
-    if get_bit y x board.(i) then i else go (i + 1)
-  in
-  go 0
+let cached_color (player : Board.player) board =
+  match player with Us -> board.us_color | Opp -> board.opp_color
 
-let copy board = { board with colors = Array.copy board.colors }
+let get_raw colors y x =
+  let rec get_enum i =
+    (* List.find (fun i -> get_bit y x board.(i)) Color.all_enum *)
+    assert (i <= Color.max);
+    if get_bit y x colors.(i) then i else get_enum (i + 1)
+  in
+  Color.of_enum_exc (get_enum 0)
 
 (* Impl *)
 
-let get board (y, x) = Color.of_enum_exc (get_enum board.colors y x)
+let get board (y, x) = get_raw board.colors y x
 
 let to_squares board =
   Array.init_matrix height width (fun y x -> get board (y, x))
@@ -54,11 +53,10 @@ let of_squares squares =
       out.(color_idx) <- set_bit y x true out.(color_idx)
     done
   done;
-  (* TODO clean this up *)
   {
     colors = out;
-    us_color = Color.of_enum_exc (get_enum out 0 0);
-    opp_color = Color.of_enum_exc (get_enum out (height - 1) (width - 1));
+    us_color = get_raw out 0 0;
+    opp_color = get_raw out (height - 1) (width - 1);
   }
 
 let () = assert ((1 lsl total_squares) - 1 = 0xFF_FF_FF_FF_FF_FF_FF)
@@ -110,30 +108,31 @@ let fill terrain init =
 
   go init
 
-(** Return [(player_color, fill_region)] *)
 let fill_board board player =
   let y, x = Board.player_to_corner player in
-  let color_idx = get_enum board.colors y x in
-  let bits = board.colors.(color_idx) in
+  let color = cached_color player board in
+  let bits = board.colors.(Color.to_enum color) in
   assert (get_bit y x bits);
 
   let fill_init =
     match player with Us -> 1 | Opp -> 1 lsl (total_squares - 1)
   in
 
-  (color_idx, fill bits fill_init)
+  fill bits fill_init
 
 let region_size board player =
-  let _, reachable = fill_board board player in
+  let reachable = fill_board board player in
   Int.popcount reachable
 
-let move board color player =
+let move board new_color player =
   let out = Array.copy board.colors in
-  let old_color_idx, reachable = fill_board board player in
-  let new_color_idx = Color.to_enum color in
+  let reachable = fill_board board player in
 
+  let old_color_idx = Color.to_enum (cached_color player board) in
+  let new_color_idx = Color.to_enum new_color in
   out.(old_color_idx) <- out.(old_color_idx) land lnot reachable;
   out.(new_color_idx) <- out.(new_color_idx) lor reachable;
+
   match player with
-  | Us -> { board with colors = out; us_color = color }
-  | Opp -> { board with colors = out; opp_color = color }
+  | Us -> { board with colors = out; us_color = new_color }
+  | Opp -> { board with colors = out; opp_color = new_color }
