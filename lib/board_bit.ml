@@ -1,6 +1,8 @@
 open Constants
 
-type t = int array
+type bits = int
+type t = bits array
+
 (** A bitboard: There are 56 colored squares and 6 possible colors per square.
     Each color needing 3 or 4 bits would take 21 or 28 bytes, but instead I just
     keep 6x 64-bit ints around, one for each color, each bit denoting whether
@@ -18,11 +20,11 @@ let () = assert (width = 8 && height = 7)
 
 let bit_idx y x = (y * width) + x
 
-let get_bit y x bits =
+let get_bit y x (bits : bits) =
   let i = bit_idx y x in
   bits land (1 lsl i) <> 0
 
-let set_bit y x bit bits =
+let set_bit y x bit (bits : bits) : bits =
   let i = bit_idx y x in
   if bit then bits lor (1 lsl i) else bits land lnot (1 lsl i)
 
