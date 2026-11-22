@@ -12,6 +12,8 @@ type t = int array
 
 (* TODO could use 7 leftover bits to save the current player colors rather than having to loop to extract them *)
 
+let () = assert (width = 8 && height = 7)
+
 (* Helpers *)
 
 let bit_idx y x = (y * width) + x
