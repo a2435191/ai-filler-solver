@@ -44,7 +44,9 @@ let squares, playout_moves =
   Random.init 0xBE7C4;
   let squares = Array.init n_boards (fun _ -> IO.random_squares ()) in
   (* For each board, a fixed sequence of indices into the 4 valid moves *)
-  let moves = Array.init n_boards (fun _ -> Array.init 64 (fun _ -> Random.int 4)) in
+  let moves =
+    Array.init n_boards (fun _ -> Array.init 64 (fun _ -> Random.int 4))
+  in
   (squares, moves)
 
 let copy_squares = Array.map Array.copy
@@ -54,8 +56,15 @@ let copy_squares = Array.map Array.copy
 (* ------------------------------------------------------------------------ *)
 
 let workload_names =
-  [ "of_squares"; "get (56 cells)"; "region_size (both)"; "valid_moves";
-    "move (4 valid)"; "playout"; "minimax" ]
+  [
+    "of_squares";
+    "get (56 cells)";
+    "region_size (both)";
+    "valid_moves";
+    "move (4 valid)";
+    "playout";
+    "minimax";
+  ]
 
 module Workloads (M : Board.S) = struct
   module BM = Board.Make (M)
@@ -103,7 +112,8 @@ module Workloads (M : Board.S) = struct
         let next = cycler boards in
         fun () ->
           let b = next () in
-          ignore (Sys.opaque_identity (M.region_size b Us + M.region_size b Opp))
+          ignore
+            (Sys.opaque_identity (M.region_size b Us + M.region_size b Opp))
     | "valid_moves" ->
         let next = cycler boards in
         fun () -> ignore (Sys.opaque_identity (BM.valid_moves (next ())))
@@ -122,7 +132,8 @@ module Workloads (M : Board.S) = struct
           ignore (Sys.opaque_identity (play boards.(k) playout_moves.(k)))
     | "minimax" ->
         let next = cycler boards in
-        fun () -> ignore (Sys.opaque_identity (MM.minimax ~max_depth:depth (next ())))
+        fun () ->
+          ignore (Sys.opaque_identity (MM.minimax ~max_depth:depth (next ())))
     | w -> invalid_arg ("unknown workload " ^ w)
 end
 
@@ -133,9 +144,7 @@ end
 type result = { ns : float; words : float; r2 : float }
 
 let instances = Instance.[ monotonic_clock ]
-
-let ols =
-  Analyze.ols ~bootstrap:0 ~r_square:true ~predictors:Measure.[| run |]
+let ols = Analyze.ols ~bootstrap:0 ~r_square:true ~predictors:Measure.[| run |]
 
 (* Allocation is measured directly rather than with Bechamel's
    [minor_allocated], which reads [Gc.quick_stat]: on OCaml 5 that counter only
@@ -154,8 +163,7 @@ let measure cfg name f =
   let raw = Benchmark.run cfg instances (List.hd (Test.elements test)) in
   let fit = Analyze.one ols Instance.monotonic_clock raw in
   {
-    ns =
-      (match Analyze.OLS.estimates fit with Some [ x ] -> x | _ -> nan);
+    ns = (match Analyze.OLS.estimates fit with Some [ x ] -> x | _ -> nan);
     words = words_per_run f;
     r2 = Option.value ~default:nan (Analyze.OLS.r_square fit);
   }
@@ -197,7 +205,8 @@ let () =
           (fun n ->
             match
               List.find_opt
-                (fun (m, _) -> String.lowercase_ascii m = String.lowercase_ascii n)
+                (fun (m, _) ->
+                  String.lowercase_ascii m = String.lowercase_ascii n)
                 impls
             with
             | Some impl -> impl
@@ -212,7 +221,8 @@ let () =
     | [] -> workload_names
     | prefixes ->
         List.filter
-          (fun w -> List.exists (fun p -> String.starts_with ~prefix:p w) prefixes)
+          (fun w ->
+            List.exists (fun p -> String.starts_with ~prefix:p w) prefixes)
           workload_names
   in
   (* Not [assert false]: that form is kept even under -noassert *)
@@ -229,7 +239,8 @@ let () =
        invariant checks. Use `dune exec --profile release ...`.\n";
 
   let cfg =
-    Benchmark.cfg ~limit:2000 ~quota:(Time.second !quota) ~kde:None ~stabilize:false ()
+    Benchmark.cfg ~limit:2000 ~quota:(Time.second !quota) ~kde:None
+      ~stabilize:false ()
   in
   (* Instantiate each implementation's workloads once *)
   let runners =
@@ -248,7 +259,9 @@ let () =
   print_newline ();
   List.iter
     (fun w ->
-      let label = if w = "minimax" then Printf.sprintf "minimax d=%d" !depth else w in
+      let label =
+        if w = "minimax" then Printf.sprintf "minimax d=%d" !depth else w
+      in
       Printf.printf "%-22s%!" label;
       (* Measure all modules for this workload back to back, so slow drift in
          machine load affects them similarly *)
@@ -258,16 +271,20 @@ let () =
       let base = (List.hd results).ns in
       List.iteri
         (fun i r ->
-          let vs = if i = 0 then "" else Printf.sprintf " %.2fx" (base /. r.ns) in
+          let vs =
+            if i = 0 then "" else Printf.sprintf " %.2fx" (base /. r.ns)
+          in
           Printf.printf "%-*s" col (pp_time r.ns ^ vs))
         results;
       print_newline ();
       Printf.printf "%-22s" "  alloc (words), r²";
       List.iter
-        (fun r -> Printf.printf "%-*s" col (Printf.sprintf "%.0f, %.3f" r.words r.r2))
+        (fun r ->
+          Printf.printf "%-*s" col (Printf.sprintf "%.0f, %.3f" r.words r.r2))
         results;
       print_newline ())
     workloads;
   print_endline
-    "\n\"Nx\" = speedup over the base module (higher is faster). Boards are \
+    "\n\
+     \"Nx\" = speedup over the base module (higher is faster). Boards are \
      uniform random (IO.random_squares), fixed seed."

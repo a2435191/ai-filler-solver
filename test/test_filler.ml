@@ -50,9 +50,7 @@ let show_player = function Us -> "Us" | Opp -> "Opp"
 exception Mismatch of string
 
 let () =
-  Printexc.register_printer (function
-    | Mismatch msg -> Some msg
-    | _ -> None)
+  Printexc.register_printer (function Mismatch msg -> Some msg | _ -> None)
 
 (** Like [Alcotest.check], but logs nothing unless the final result fails.
     [Alcotest.check] and [Alcotest.fail] log every assertion, including every
@@ -81,8 +79,7 @@ module Ref = struct
     let seen = Array.make_matrix height width false in
     let c = corner_color sq p in
     let rec go (y, x) =
-      if in_bounds (y, x) && (not seen.(y).(x)) && Color.equal sq.(y).(x) c
-      then begin
+      if in_bounds (y, x) && (not seen.(y).(x)) && Color.equal sq.(y).(x) c then begin
         seen.(y).(x) <- true;
         List.iter go [ (y + 1, x); (y - 1, x); (y, x + 1); (y, x - 1) ]
       end
@@ -130,8 +127,7 @@ module Gen = struct
     let uy, ux = player_to_corner Us in
     let opp = Ref.corner_color sq Opp in
     if Color.equal sq.(uy).(ux) opp then
-      sq.(uy).(ux) <-
-        Color.of_enum_exc ((Color.to_enum opp + 1) mod Color.count);
+      sq.(uy).(ux) <- Color.of_enum_exc ((Color.to_enum opp + 1) mod Color.count);
     sq
 
   (** A board, a player, and an index into the (always 4) valid moves. Using an
@@ -159,9 +155,9 @@ end
 (* Hand-written edge cases                                                  *)
 (* ------------------------------------------------------------------------ *)
 
-(** [(name, board, (expected Us region, expected Opp region))]. Top line is
-    row [height - 1] (the opponent's row); bottom line is row 0 (our row).
-    Letters as in [Color.from_string]. *)
+(** [(name, board, (expected Us region, expected Opp region))]. Top line is row
+    [height - 1] (the opponent's row); bottom line is row 0 (our row). Letters
+    as in [Color.from_string]. *)
 let fixed_boards : (string * squares * (int * int)) list =
   let b name sizes s = (name, IO.parse_to_squares s, sizes) in
   [
@@ -250,8 +246,7 @@ let ref_tests =
     (fun (name, sq, (us, opp)) ->
       Alcotest.test_case name `Quick (fun () ->
           Alcotest.(check (pair int int))
-            "(Us, Opp) region sizes"
-            (us, opp)
+            "(Us, Opp) region sizes" (us, opp)
             (Ref.region_size sq Us, Ref.region_size sq Opp)))
     fixed_boards
 
@@ -290,7 +285,8 @@ module Suite (M : Board.S) = struct
         expect
           ~what:(Printf.sprintf "%s: region_size %s" what (show_player p))
           ~eq:Int.equal ~show:string_of_int
-          (Ref.region_size expected p) (M.region_size b p))
+          (Ref.region_size expected p)
+          (M.region_size b p))
       [ Us; Opp ]
 
   let check_fresh sq =
@@ -347,8 +343,7 @@ module Suite (M : Board.S) = struct
         (fun (sq, is) ->
           let rec go sq b p n = function
             | [] -> ()
-            | _ when is_done (Ref.region_size sq Us) (Ref.region_size sq Opp)
-              ->
+            | _ when is_done (Ref.region_size sq Us) (Ref.region_size sq Opp) ->
                 ()
             | i :: rest ->
                 let c = nth_move sq i in
