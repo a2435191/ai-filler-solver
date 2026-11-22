@@ -50,7 +50,7 @@ let at_least_one_color_inv board =
 let at_most_one_color_inv board =
   let _, ok =
     Array.fold_left
-      (fun (prev, ok) curr -> (curr, ok && prev land curr = 0))
+      (fun (acc, ok) curr -> (acc lor curr, ok && acc land curr = 0))
       (0, true) board
   in
   ok
