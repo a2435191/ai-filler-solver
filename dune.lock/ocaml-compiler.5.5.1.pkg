@@ -47,7 +47,9 @@
        (when false "")
        (when false "")
        (when false "")
-       (when false "")
+       (when
+        (catch_undefined_var %{pkg:ocaml-option-flambda:installed} false)
+        --enable-flambda)
        (when false "")
        (when false "")
        (when false "")
@@ -91,7 +93,9 @@
        (when false "")
        (when false "")
        (when false "")
-       (when false "")
+       (when
+        (catch_undefined_var %{pkg:ocaml-option-flambda:installed} false)
+        --enable-flambda)
        (when false "")
        (when false "")
        (when false "")
@@ -109,7 +113,8 @@
        --disable-warn-error)))))))
 
 (depends
- (all_platforms (compiler-cloning)))
+ (all_platforms
+  (compiler-cloning ocaml-option-flambda)))
 
 (source
  (fetch
