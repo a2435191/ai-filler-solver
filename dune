@@ -1,4 +1,10 @@
 (env
  (release
   (flags
-   (:standard -noassert -O3))))
+   (:standard -noassert))
+  (ocamlopt_flags
+   (:standard -O3)))
+ (_
+  (flags (:standard))
+  (ocamlopt_flags
+   (:standard -Oclassic))))
