@@ -32,8 +32,8 @@ let to_squares board =
 
 let of_squares squares =
   let out = Array.make Color.count 0 in
-  for y = 0 to height do
-    for x = 0 to width do
+  for y = 0 to height - 1 do
+    for x = 0 to width - 1 do
       let color = squares.(y).(x) in
       let color_idx = Color.to_enum color in
       out.(color_idx) <- set_bit y x true out.(color_idx)
