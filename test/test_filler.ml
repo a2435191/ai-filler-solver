@@ -1,6 +1,6 @@
 (* Interface tests for [Board.S].
 
-   Every implementation listed in [impls] (bottom of file) is run through the
+   Every implementation listed in [Impls.list] is run through the
    same [Suite] functor, and each one becomes its own Alcotest group. Tests
    compare the implementation against [Ref], a deliberately naive reference
    model that works directly on [squares], so they don't trust any of the
@@ -363,15 +363,10 @@ module Suite (M : Board.S) = struct
 end
 
 (* ------------------------------------------------------------------------ *)
-(* Implementations under test: add new ones here                            *)
+(* Implementations under test: add new ones here or in [Impls.list]         *)
 (* ------------------------------------------------------------------------ *)
 
-let impls : (string * (module Board.S)) list =
-  [
-    ("Board_basic", (module Board_basic));
-    ("Board_with_cache", (module Board_with_cache));
-    ("Board_bit", (module Board_bit));
-  ]
+let impls = Impls.list
 
 let () =
   Alcotest.run "Board.S"
