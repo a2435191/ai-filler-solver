@@ -12,6 +12,8 @@ type t = int array
 
 (* TODO could use 7 leftover bits to save the current player colors rather than having to loop to extract them *)
 
+(* Helpers *)
+
 let bit_idx y x = (y * width) + x
 
 let get_bit y x bits =
@@ -24,6 +26,8 @@ let set_bit y x bit bits =
 
 let get_enum board y x =
   List.find (fun i -> get_bit y x board.(i)) Color.all_enum
+
+(* Impl *)
 
 let get board (y, x) = Color.of_enum_exc (get_enum board y x)
 
