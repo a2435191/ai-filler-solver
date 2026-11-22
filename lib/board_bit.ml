@@ -12,6 +12,10 @@ type t = int array
 
 (* TODO could use 7 leftover bits to save the current player colors rather than having to loop to extract them *)
 
+let () = assert (width = 8 && height = 7)
+
+(* Helpers *)
+
 let bit_idx y x = (y * width) + x
 
 let get_bit y x bits =
@@ -25,6 +29,8 @@ let set_bit y x bit bits =
 let get_enum board y x =
   List.find (fun i -> get_bit y x board.(i)) Color.all_enum
 
+(* Impl *)
+
 let get board (y, x) = Color.of_enum_exc (get_enum board y x)
 
 let to_squares board =
@@ -32,8 +38,8 @@ let to_squares board =
 
 let of_squares squares =
   let out = Array.make Color.count 0 in
-  for y = 0 to height do
-    for x = 0 to width do
+  for y = 0 to height - 1 do
+    for x = 0 to width - 1 do
       let color = squares.(y).(x) in
       let color_idx = Color.to_enum color in
       out.(color_idx) <- set_bit y x true out.(color_idx)
@@ -43,25 +49,25 @@ let of_squares squares =
 
 let () = assert ((1 lsl total_squares) - 1 = 0xff_ff_ff_ff_ff_ff_ff)
 
-let at_least_one_color board =
+let at_least_one_color_inv board =
   let or'ed = Array.fold_left ( lor ) 0 board in
   or'ed = (1 lsl total_squares) - 1
 
-let at_most_one_color board =
+let at_most_one_color_inv board =
   let _, ok =
     Array.fold_left
-      (fun (prev, ok) curr -> (curr, ok && prev land curr = 0))
+      (fun (acc, ok) curr -> (acc lor curr, ok && acc land curr = 0))
       (0, true) board
   in
   ok
 
-let no_high_bits board =
+let no_high_bits_inv board =
   Array.for_all (fun bits -> bits lsr total_squares = 0) board
 
 let check_inv board =
-  assert (at_least_one_color board);
-  assert (at_most_one_color board);
-  assert (no_high_bits board);
+  assert (at_least_one_color_inv board);
+  assert (at_most_one_color_inv board);
+  assert (no_high_bits_inv board);
   board
 
 (** Flood-fill according to the graph given by the bits of [terrain] (as a 2D

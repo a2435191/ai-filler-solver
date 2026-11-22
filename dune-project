@@ -23,6 +23,7 @@
   dune
   (ppx_deriving
    (= 6.2.0))
+  bechamel
   (alcotest :with-test)
   (qcheck-core :with-test)
   (qcheck-alcotest :with-test))

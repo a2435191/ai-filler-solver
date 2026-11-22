@@ -1,4 +1,10 @@
 (executable
  (public_name filler)
  (name main)
+ (modules main)
  (libraries filler))
+
+(executable
+ (name bench)
+ (modules bench)
+ (libraries filler bechamel))
