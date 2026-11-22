@@ -24,6 +24,7 @@
   (ppx_deriving
    (= 6.2.0))
   bechamel
+  ocaml-option-flambda
   (alcotest :with-test)
   (qcheck-core :with-test)
   (qcheck-alcotest :with-test))

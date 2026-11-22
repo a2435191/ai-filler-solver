@@ -1,4 +1,4 @@
-(version 1.10.1)
+(version 1.10.2)
 
 (build
  (all_platforms
@@ -14,6 +14,6 @@
 (source
  (fetch
   (url
-   https://github.com/mirage/alcotest/releases/download/1.10.1/alcotest-1.10.1.tbz)
+   https://github.com/mirage/alcotest/releases/download/1.10.2/alcotest-1.10.2.tbz)
   (checksum
-   sha512=6f779fa96faf96b5b462ddc428aeaaa73a6be96771dbbad6a05b7bb00dae246648891c211e26174729c1f40128410ad96f2512101ae8b7d61f968ee61534b3d0)))
+   sha512=fadb58647cb046624e54a08da873e1abdf56fedc3f5f6c9d91a851e4f83a688e451ba087e8100976bfcbe8d6374dd2e6db718f175483e0a825e0acba7be3a3d1)))
