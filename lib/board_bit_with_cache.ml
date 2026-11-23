@@ -51,6 +51,44 @@ let get board (y, x) = get_raw board.colors y x
 let get_corner board player =
   match player with Board.Us -> board.us_color | Opp -> board.opp_color
 
+(** Flood-fill according to the graph given by the bits of [terrain] (as a 2D
+    grid), starting with nodes given by the bit(s) of [init] *)
+let fill terrain init =
+  (* remove the first bit of each row (byte) *)
+  let no_l_col_mask = 0x7F_7F_7F_7F_7F_7F_7F in
+  (* remove the last bit of each row (byte) *)
+  let no_r_col_mask = 0xFE_FE_FE_FE_FE_FE_FE in
+
+  (* Get all 4-neighbors of the bits in [curr] that are enabled in [terrain] *)
+  let step curr =
+    let mask_w = (curr land no_l_col_mask) lsl 1 in
+    let mask_e = (curr land no_r_col_mask) lsr 1 in
+    let mask_n = curr lsl 8 in
+    let mask_s = curr lsr 8 in
+    let mask = mask_w lor mask_e lor mask_n lor mask_s in
+    curr lor (mask land terrain)
+  in
+
+  (* loop until fixed point *)
+  let rec go curr =
+    let next = step curr in
+    if next = curr then curr else go next
+  in
+
+  go init
+
+let fill_board board player =
+  let y, x = Board.player_to_corner player in
+  let color = get_corner board player in
+  let bits = board.colors.(Color.to_enum color) in
+  assert (get_bit y x bits);
+
+  let fill_init =
+    match player with Us -> 1 | Opp -> 1 lsl (total_squares - 1)
+  in
+
+  fill bits fill_init
+
 let to_squares board =
   Array.init_matrix height width (fun y x -> get board (y, x))
 
@@ -91,44 +129,6 @@ let check_inv board =
   assert (at_most_one_color_inv board);
   assert (no_high_bits_inv board);
   board
-
-(** Flood-fill according to the graph given by the bits of [terrain] (as a 2D
-    grid), starting with nodes given by the bit(s) of [init] *)
-let fill terrain init =
-  (* remove the first bit of each row (byte) *)
-  let no_l_col_mask = 0x7F_7F_7F_7F_7F_7F_7F in
-  (* remove the last bit of each row (byte) *)
-  let no_r_col_mask = 0xFE_FE_FE_FE_FE_FE_FE in
-
-  (* Get all 4-neighbors of the bits in [curr] that are enabled in [terrain] *)
-  let step curr =
-    let mask_w = (curr land no_l_col_mask) lsl 1 in
-    let mask_e = (curr land no_r_col_mask) lsr 1 in
-    let mask_n = curr lsl 8 in
-    let mask_s = curr lsr 8 in
-    let mask = mask_w lor mask_e lor mask_n lor mask_s in
-    curr lor (mask land terrain)
-  in
-
-  (* loop until fixed point *)
-  let rec go curr =
-    let next = step curr in
-    if next = curr then curr else go next
-  in
-
-  go init
-
-let fill_board board player =
-  let y, x = Board.player_to_corner player in
-  let color = get_corner board player in
-  let bits = board.colors.(Color.to_enum color) in
-  assert (get_bit y x bits);
-
-  let fill_init =
-    match player with Us -> 1 | Opp -> 1 lsl (total_squares - 1)
-  in
-
-  fill bits fill_init
 
 let region_size board player =
   let reachable = fill_board board player in
