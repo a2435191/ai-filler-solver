@@ -94,9 +94,16 @@ let of_squares squares =
     done
   done;
 
+  (* compute everything up-front once *)
   let us_color = get_raw out 0 0 in
   let opp_color = get_raw out (height - 1) (width - 1) in
-  { colors = out; us_color; opp_color }
+  let us_size =
+    Int.popcount (fill out.(Color.to_enum us_color) (corner_bits Us))
+  in
+  let opp_size =
+    Int.popcount (fill out.(Color.to_enum opp_color) (corner_bits Opp))
+  in
+  { colors = out; us_color; opp_color; us_size; opp_size }
 
 let () = assert ((1 lsl total_squares) - 1 = 0xFF_FF_FF_FF_FF_FF_FF)
 
