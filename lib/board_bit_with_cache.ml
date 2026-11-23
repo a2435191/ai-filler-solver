@@ -1,8 +1,8 @@
 open Constants
 
 type bits = int
-type t = { colors : bits array; us_color : Color.t; opp_color : Color.t }
 
+type t = { colors : bits array; us_color : Color.t; opp_color : Color.t }
 (** A bitboard: There are 56 colored squares and 6 possible colors per square.
     Each color needing 3 or 4 bits would take 21 or 28 bytes, but instead I just
     keep 6x 64-bit ints around, one for each color, each bit denoting whether
