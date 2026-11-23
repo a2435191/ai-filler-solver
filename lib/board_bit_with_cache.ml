@@ -25,6 +25,10 @@ type t = {
     off the values in [region_size], to avoid duplicating the flood-fill work of
     [move]. *)
 
+let corner_bits : Board.player -> bits = function
+  | Us -> 1
+  | Opp -> 1 lsl (total_squares - 1)
+
 (** Flood-fill according to the graph given by the bits of [terrain] (as a 2D
     grid), starting with nodes given by the bit(s) of [init] *)
 let fill terrain init =
@@ -89,11 +93,10 @@ let of_squares squares =
       out.(color_idx) <- set_bit y x true out.(color_idx)
     done
   done;
-  {
-    colors = out;
-    us_color = get_raw out 0 0;
-    opp_color = get_raw out (height - 1) (width - 1);
-  }
+
+  let us_color = get_raw out 0 0 in
+  let opp_color = get_raw out (height - 1) (width - 1) in
+  { colors = out; us_color; opp_color }
 
 let () = assert ((1 lsl total_squares) - 1 = 0xFF_FF_FF_FF_FF_FF_FF)
 
@@ -124,11 +127,7 @@ let fill_board board player =
   let bits = board.colors.(Color.to_enum color) in
   assert (get_bit y x bits);
 
-  let fill_init =
-    match player with Us -> 1 | Opp -> 1 lsl (total_squares - 1)
-  in
-
-  fill bits fill_init
+  fill bits (corner_bits player)
 
 let region_size board player =
   let reachable = fill_board board player in
