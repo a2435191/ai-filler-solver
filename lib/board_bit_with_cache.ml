@@ -95,7 +95,7 @@ let of_squares squares =
     done
   done;
 
-  (* compute everything up-front once *)
+  (* compute everything up-front the first time *)
   let us_color = get_aux out 0 0 in
   let opp_color = get_aux out (height - 1) (width - 1) in
   let us_size =
