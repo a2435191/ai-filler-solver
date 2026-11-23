@@ -137,13 +137,18 @@ let fill_board board player =
 
   fill bits (corner_bits player)
 
-let region_size board player =
-  let reachable = fill_board board player in
-  Int.popcount reachable
+let region_size board : Board.player -> int = function
+  | Us -> board.us_size
+  | Opp -> board.opp_size
 
 let move board new_color player =
   let out = Array.copy board.colors in
-  let reachable = fill_board board player in
+  let y, x = Board.player_to_corner player in
+  let old_color = get_corner board player in
+  let bits = board.colors.(Color.to_enum old_color) in
+  assert (get_bit y x bits);
+
+  let reachable = fill bits (corner_bits player) in
 
   let old_color_idx = Color.to_enum (get_corner board player) in
   let new_color_idx = Color.to_enum new_color in
