@@ -26,9 +26,6 @@ type t = {
     [move]. *)
 
 let () = assert (width = 8 && height = 7)
-
-(* Helpers *)
-
 let bit_idx y x = (y * width) + x
 
 let get_bit y x (bits : bits) =
@@ -46,8 +43,6 @@ let get_raw colors y x =
     if get_bit y x colors.(i) then i else get_enum (i + 1)
   in
   Color.of_enum_exc (get_enum 0)
-
-(* Impl *)
 
 (** [get] is quite slow. We only cache the values for the corners *)
 let get board (y, x) = get_raw board.colors y x
