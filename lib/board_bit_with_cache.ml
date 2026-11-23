@@ -2,7 +2,13 @@ open Constants
 
 type bits = int
 
-type t = { colors : bits array; us_color : Color.t; opp_color : Color.t }
+type t = {
+  colors : bits array;
+  us_color : Color.t;
+  opp_color : Color.t;
+  us_size : int;
+  opp_size : int;
+}
 (** A bitboard: There are 56 colored squares and 6 possible colors per square.
     Each color needing 3 or 4 bits would take 21 or 28 bytes, but instead I just
     keep 6x 64-bit ints around, one for each color, each bit denoting whether
@@ -10,7 +16,14 @@ type t = { colors : bits array; us_color : Color.t; opp_color : Color.t }
     total, so a little bigger but it makes [region_size] very fast (see below)
 
     Since an ocaml [int] has its lowest bit as a tag bit, we only have 63 bits,
-    but that's enough *)
+    but that's enough. Hence [type bits = int].
+
+    We precompute the players' selected colors so that in [move] we don't have
+    to compute them the slow way with [get].
+
+    Lastly, we also precompute the players' region sizes in [move] and just read
+    off the values in [region_size], to avoid duplicating the flood-fill work of
+    [move]. *)
 
 let () = assert (width = 8 && height = 7)
 
