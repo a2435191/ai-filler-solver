@@ -141,12 +141,14 @@ let move board new_color player =
   assert (get_bit y x bits);
 
   let reachable = fill bits (corner_bits player) in
+  let size = Int.popcount reachable in
 
   let old_color_idx = Color.to_enum (get_corner board player) in
   let new_color_idx = Color.to_enum new_color in
   out.(old_color_idx) <- out.(old_color_idx) land lnot reachable;
   out.(new_color_idx) <- out.(new_color_idx) lor reachable;
 
+  (* Since a player never captures the other player's tiles, we just update the current player's region size *)
   match player with
-  | Us -> { board with colors = out; us_color = new_color }
-  | Opp -> { board with colors = out; opp_color = new_color }
+  | Us -> { board with colors = out; us_color = new_color; us_size = size }
+  | Opp -> { board with colors = out; opp_color = new_color; opp_size = size }
