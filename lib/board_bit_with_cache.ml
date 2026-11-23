@@ -28,10 +28,6 @@ type t = {
 let region_of_player (player : Board.player) board =
   match player with Us -> board.us_region | Opp -> board.opp_region
 
-let corner_bits : Board.player -> bits = function
-  | Us -> 1
-  | Opp -> 1 lsl (total_squares - 1)
-
 (** [fill terrain init] flood-fills according to the graph given by the bits of
     [terrain] (as a 2D grid), starting with nodes given by the bit(s) of [init]
 *)
@@ -101,10 +97,15 @@ let of_squares squares =
   (* compute everything up-front the first time *)
   let us_color = get_aux out 0 0 in
   let opp_color = get_aux out (height - 1) (width - 1) in
-  let us_region = fill out.(Color.to_enum us_color) (corner_bits Us) in
-  let opp_region = fill out.(Color.to_enum opp_color) (corner_bits Opp) in
+
+  (* The initial mask for each player's corner. [Us] is the LSB, and [Opp] is the MSB (of the 48 bits). *)
+  let us_init = 1 and opp_init = 1 lsl (total_squares - 1) in
+
+  let us_region = fill out.(Color.to_enum us_color) us_init in
+  let opp_region = fill out.(Color.to_enum opp_color) opp_init in
   { colors = out; us_color; opp_color; us_region; opp_region }
 
+(* Not to be confused with [1 lsl (total_squares - 1)] above *)
 let () = assert ((1 lsl total_squares) - 1 = 0xFF_FF_FF_FF_FF_FF_FF)
 
 let at_least_one_color_inv board =
