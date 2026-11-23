@@ -135,6 +135,7 @@ let region_size board : Board.player -> int = function
 
 let move board new_color player =
   let old_color = get_corner board player in
+  assert (old_color <> new_color);
   let old_color_idx = Color.to_enum old_color in
   let new_color_idx = Color.to_enum new_color in
 
