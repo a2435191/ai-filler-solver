@@ -134,17 +134,19 @@ let region_size board : Board.player -> int = function
   | Opp -> board.opp_size
 
 let move board new_color player =
-  let out = Array.copy board.colors in
-  let y, x = Board.player_to_corner player in
   let old_color = get_corner board player in
-  let bits = board.colors.(Color.to_enum old_color) in
-  assert (get_bit y x bits);
+  let old_color_idx = Color.to_enum old_color in
+  let new_color_idx = Color.to_enum new_color in
+
+  let bits = board.colors.(old_color_idx) in
+  assert (
+    let y, x = Board.player_to_corner player in
+    get_bit y x bits);
 
   let reachable = fill bits (corner_bits player) in
   let size = Int.popcount reachable in
 
-  let old_color_idx = Color.to_enum (get_corner board player) in
-  let new_color_idx = Color.to_enum new_color in
+  let out = Array.copy board.colors in
   out.(old_color_idx) <- out.(old_color_idx) land lnot reachable;
   out.(new_color_idx) <- out.(new_color_idx) lor reachable;
 
