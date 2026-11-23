@@ -29,16 +29,17 @@ let corner_bits : Board.player -> bits = function
   | Us -> 1
   | Opp -> 1 lsl (total_squares - 1)
 
-(** Flood-fill according to the graph given by the bits of [terrain] (as a 2D
-    grid), starting with nodes given by the bit(s) of [init] *)
-let fill terrain init =
+(** [fill terrain init] flood-fills according to the graph given by the bits of
+    [terrain] (as a 2D grid), starting with nodes given by the bit(s) of [init]
+*)
+let fill (terrain : bits) init =
   (* remove the first bit of each row (byte) *)
   let no_l_col_mask = 0x7F_7F_7F_7F_7F_7F_7F in
   (* remove the last bit of each row (byte) *)
   let no_r_col_mask = 0xFE_FE_FE_FE_FE_FE_FE in
 
   (* Get all 4-neighbors of the bits in [curr] that are enabled in [terrain] *)
-  let step curr =
+  let step (curr : bits) =
     let mask_w = (curr land no_l_col_mask) lsl 1 in
     let mask_e = (curr land no_r_col_mask) lsr 1 in
     let mask_n = curr lsl 8 in
