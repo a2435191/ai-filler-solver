@@ -25,32 +25,6 @@ type t = {
     off the values in [region_size], to avoid duplicating the flood-fill work of
     [move]. *)
 
-let () = assert (width = 8 && height = 7)
-let bit_idx y x = (y * width) + x
-
-let get_bit y x (bits : bits) =
-  let i = bit_idx y x in
-  bits land (1 lsl i) <> 0
-
-let set_bit y x bit (bits : bits) : bits =
-  let i = bit_idx y x in
-  if bit then bits lor (1 lsl i) else bits land lnot (1 lsl i)
-
-let get_raw colors y x =
-  let rec get_enum i =
-    (* List.find (fun i -> get_bit y x board.(i)) Color.all_enum *)
-    assert (i <= Color.max);
-    if get_bit y x colors.(i) then i else get_enum (i + 1)
-  in
-  Color.of_enum_exc (get_enum 0)
-
-(** [get] is quite slow. We only cache the values for the corners *)
-let get board (y, x) = get_raw board.colors y x
-
-(** fast and cached *)
-let get_corner board player =
-  match player with Board.Us -> board.us_color | Opp -> board.opp_color
-
 (** Flood-fill according to the graph given by the bits of [terrain] (as a 2D
     grid), starting with nodes given by the bit(s) of [init] *)
 let fill terrain init =
@@ -77,17 +51,31 @@ let fill terrain init =
 
   go init
 
-let fill_board board player =
-  let y, x = Board.player_to_corner player in
-  let color = get_corner board player in
-  let bits = board.colors.(Color.to_enum color) in
-  assert (get_bit y x bits);
+let () = assert (width = 8 && height = 7)
+let bit_idx y x = (y * width) + x
 
-  let fill_init =
-    match player with Us -> 1 | Opp -> 1 lsl (total_squares - 1)
+let get_bit y x (bits : bits) =
+  let i = bit_idx y x in
+  bits land (1 lsl i) <> 0
+
+let set_bit y x bit (bits : bits) : bits =
+  let i = bit_idx y x in
+  if bit then bits lor (1 lsl i) else bits land lnot (1 lsl i)
+
+let get_raw colors y x =
+  let rec get_enum i =
+    (* List.find (fun i -> get_bit y x board.(i)) Color.all_enum *)
+    assert (i <= Color.max);
+    if get_bit y x colors.(i) then i else get_enum (i + 1)
   in
+  Color.of_enum_exc (get_enum 0)
 
-  fill bits fill_init
+(** [get] is quite slow. We only cache the values for the corners *)
+let get board (y, x) = get_raw board.colors y x
+
+(** fast and cached *)
+let get_corner board player =
+  match player with Board.Us -> board.us_color | Opp -> board.opp_color
 
 let to_squares board =
   Array.init_matrix height width (fun y x -> get board (y, x))
@@ -129,6 +117,18 @@ let check_inv board =
   assert (at_most_one_color_inv board);
   assert (no_high_bits_inv board);
   board
+
+let fill_board board player =
+  let y, x = Board.player_to_corner player in
+  let color = get_corner board player in
+  let bits = board.colors.(Color.to_enum color) in
+  assert (get_bit y x bits);
+
+  let fill_init =
+    match player with Us -> 1 | Opp -> 1 lsl (total_squares - 1)
+  in
+
+  fill bits fill_init
 
 let region_size board player =
   let reachable = fill_board board player in
