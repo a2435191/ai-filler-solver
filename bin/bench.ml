@@ -181,7 +181,12 @@ let pp_time ns =
 (* ------------------------------------------------------------------------ *)
 
 let () =
-  let depth = ref 4 and quota = ref 0.5 and only = ref [] and names = ref [] in
+  let depth = ref 4
+  and quota = ref 0.5
+  and only = ref []
+  and names = ref []
+  and show_alloc = ref true in
+
   let usage =
     "bench.exe [options] [MODULE ...]\n\nModules: "
     ^ String.concat ", " (List.map fst impls)
@@ -196,6 +201,9 @@ let () =
       ( "-only",
         Arg.String (fun s -> only := String.split_on_char ',' s),
         "W1,W2  only run workloads whose name starts with one of these" );
+      ( "-show-alloc",
+        Arg.Bool (fun b -> show_alloc := b),
+        "Whether to print the # of allocations (default true)" );
     ]
     (fun s -> names := s :: !names)
     usage;
@@ -279,12 +287,13 @@ let () =
           Printf.printf "%-*s" col (pp_time r.ns ^ vs))
         results;
       print_newline ();
-      Printf.printf "%-22s" "  alloc (words), r²";
-      List.iter
-        (fun r ->
-          Printf.printf "%-*s" col (Printf.sprintf "%.0f, %.3f" r.words r.r2))
-        results;
-      print_newline ())
+      if !show_alloc then (
+        Printf.printf "%-22s" "  alloc (words), r²";
+        List.iter
+          (fun r ->
+            Printf.printf "%-*s" col (Printf.sprintf "%.0f, %.3f" r.words r.r2))
+          results;
+        print_newline ()))
     workloads;
   print_endline
     "\n\
