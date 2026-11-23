@@ -129,14 +129,6 @@ let check_inv board =
   assert (no_high_bits_inv board);
   board
 
-let fill_board board player =
-  let y, x = Board.player_to_corner player in
-  let color = get_corner board player in
-  let bits = board.colors.(Color.to_enum color) in
-  assert (get_bit y x bits);
-
-  fill bits (corner_bits player)
-
 let region_size board : Board.player -> int = function
   | Us -> board.us_size
   | Opp -> board.opp_size
