@@ -137,6 +137,8 @@ let check_inv board =
   assert (at_least_one_color_inv board);
   assert (at_most_one_color_inv board);
   assert (no_high_bits_inv board);
+  assert (board.us_region_size = Int.popcount board.us_region);
+  assert (board.opp_region_size = Int.popcount board.opp_region);
   board
 
 let region_size board : Board.player -> int = function
