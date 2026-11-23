@@ -6,8 +6,8 @@ type t = {
   colors : bits array;
   us_color : Color.t;
   opp_color : Color.t;
-  us_size : int;
-  opp_size : int;
+  us_region : bits;
+  opp_region : bits;
 }
 (** A bitboard: There are 56 colored squares and 6 possible colors per square.
     Each color needing 3 or 4 bits would take 21 or 28 bytes, but instead I just
@@ -21,9 +21,12 @@ type t = {
     We precompute the players' selected colors so that in [move] we don't have
     to compute them the slow way with [get].
 
-    Lastly, we also precompute the players' region sizes in [move] and just read
-    off the values in [region_size], to avoid duplicating the flood-fill work of
-    [move]. *)
+    Lastly, we also precompute the players' regions in [move] and just
+    [Int.popcount] the values in [region_size], to avoid duplicating the
+    flood-fill work of [move]. *)
+
+let region_of_player (player : Board.player) board =
+  match player with Us -> board.us_region | Opp -> board.opp_region
 
 let corner_bits : Board.player -> bits = function
   | Us -> 1
@@ -98,13 +101,9 @@ let of_squares squares =
   (* compute everything up-front the first time *)
   let us_color = get_aux out 0 0 in
   let opp_color = get_aux out (height - 1) (width - 1) in
-  let us_size =
-    Int.popcount (fill out.(Color.to_enum us_color) (corner_bits Us))
-  in
-  let opp_size =
-    Int.popcount (fill out.(Color.to_enum opp_color) (corner_bits Opp))
-  in
-  { colors = out; us_color; opp_color; us_size; opp_size }
+  let us_region = fill out.(Color.to_enum us_color) (corner_bits Us) in
+  let opp_region = fill out.(Color.to_enum opp_color) (corner_bits Opp) in
+  { colors = out; us_color; opp_color; us_region; opp_region }
 
 let () = assert ((1 lsl total_squares) - 1 = 0xFF_FF_FF_FF_FF_FF_FF)
 
@@ -129,9 +128,7 @@ let check_inv board =
   assert (no_high_bits_inv board);
   board
 
-let region_size board : Board.player -> int = function
-  | Us -> board.us_size
-  | Opp -> board.opp_size
+let region_size board player = Int.popcount (region_of_player player board)
 
 let move board new_color player =
   let old_color = get_corner board player in
@@ -139,19 +136,19 @@ let move board new_color player =
   let old_color_idx = Color.to_enum old_color in
   let new_color_idx = Color.to_enum new_color in
 
-  let bits = board.colors.(old_color_idx) in
-  assert (
-    let y, x = Board.player_to_corner player in
-    get_bit y x bits);
+  let bits = board.colors.(new_color_idx) in
+  (* us_region or opp_region *)
+  let start = region_of_player player board in
 
-  let reachable = fill bits (corner_bits player) in
-  let size = Int.popcount reachable in
+  let reachable = fill bits start in
 
   let out = Array.copy board.colors in
   out.(old_color_idx) <- out.(old_color_idx) land lnot reachable;
   out.(new_color_idx) <- out.(new_color_idx) lor reachable;
 
-  (* Since a player never captures the other player's tiles, we just update the current player's region size *)
+  (* Since a player never captures the other player's tiles, we just update the current player's region *)
   match player with
-  | Us -> { board with colors = out; us_color = new_color; us_size = size }
-  | Opp -> { board with colors = out; opp_color = new_color; opp_size = size }
+  | Us ->
+      { board with colors = out; us_color = new_color; us_region = reachable }
+  | Opp ->
+      { board with colors = out; opp_color = new_color; opp_region = reachable }
