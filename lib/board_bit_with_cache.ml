@@ -67,7 +67,7 @@ let set_bit y x bit (bits : bits) : bits =
   let i = bit_idx y x in
   if bit then bits lor (1 lsl i) else bits land lnot (1 lsl i)
 
-let get_raw colors y x =
+let get_aux colors y x =
   let rec get_enum i =
     (* List.find (fun i -> get_bit y x board.(i)) Color.all_enum *)
     assert (i <= Color.max);
@@ -76,7 +76,7 @@ let get_raw colors y x =
   Color.of_enum_exc (get_enum 0)
 
 (** [get] is quite slow. We only cache the values for the corners *)
-let get board (y, x) = get_raw board.colors y x
+let get board (y, x) = get_aux board.colors y x
 
 (** fast and cached *)
 let get_corner board player =
@@ -96,8 +96,8 @@ let of_squares squares =
   done;
 
   (* compute everything up-front once *)
-  let us_color = get_raw out 0 0 in
-  let opp_color = get_raw out (height - 1) (width - 1) in
+  let us_color = get_aux out 0 0 in
+  let opp_color = get_aux out (height - 1) (width - 1) in
   let us_size =
     Int.popcount (fill out.(Color.to_enum us_color) (corner_bits Us))
   in
