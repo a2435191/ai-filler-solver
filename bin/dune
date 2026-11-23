@@ -8,3 +8,8 @@
  (name bench)
  (modules bench)
  (libraries filler bechamel))
+
+(executable
+ (name intrinsics)
+ (modules intrinsics)
+ (libraries filler))
