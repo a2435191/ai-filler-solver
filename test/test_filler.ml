@@ -280,6 +280,15 @@ module Suite (M : Board.S) = struct
           expected.(y).(x)
           (M.get b (y, x)))
       all_cells;
+    (* get_corner may be cached, so it gets its own check: after moves, a stale
+       cache would disagree with the squares even if [get] is right *)
+    List.iter
+      (fun p ->
+        expect
+          ~what:(Printf.sprintf "%s: get_corner %s" what (show_player p))
+          ~eq:Color.equal ~show:Color.show (Ref.corner_color expected p)
+          (M.get_corner b p))
+      [ Us; Opp ];
     List.iter
       (fun p ->
         expect
@@ -332,7 +341,8 @@ module Suite (M : Board.S) = struct
 
   let properties =
     [
-      prop "of_squares, get, region_size, check_inv, valid_moves" Gen.squares
+      prop "of_squares, get, get_corner, region_size, check_inv, valid_moves"
+        Gen.squares
         Print.squares check_fresh;
       prop "move matches reference" Gen.move Print.move (fun (sq, p, i) ->
           check_move sq p (nth_move sq i));

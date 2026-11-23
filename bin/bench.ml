@@ -54,6 +54,7 @@ let workload_names =
   [
     "of_squares";
     "get (56 cells)";
+    "get_corner (both)";
     "region_size (both)";
     "valid_moves";
     "move (4 valid)";
@@ -103,6 +104,12 @@ module Workloads (M : Board.S) = struct
         fun () ->
           let b = next () in
           List.iter (fun c -> ignore (Sys.opaque_identity (M.get b c))) cells
+    | "get_corner (both)" ->
+        let next = cycler boards in
+        fun () ->
+          let b = next () in
+          ignore (Sys.opaque_identity (M.get_corner b Us));
+          ignore (Sys.opaque_identity (M.get_corner b Opp))
     | "region_size (both)" ->
         let next = cycler boards in
         fun () ->
