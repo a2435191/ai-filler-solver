@@ -2,23 +2,28 @@ open Ppxlib
 
 let name = "get_impl_info"
 
+let ghost_loc ctxt =
+  {
+    (Expansion_context.Extension.extension_point_loc ctxt) with
+    loc_ghost = true;
+  }
+
 let expand ~ctxt name =
-  let loc = Expansion_context.Extension.extension_point_loc ctxt in
-  let open Ast_builder.Default in
-  let label_expr = estring ~loc name in
+  let loc = ghost_loc ctxt in
+  let open Ast_builder.Make (struct let loc = loc end) [@ocamlformat "disable"] in
+  let label_expr = estring name in
   let module_expr =
-    pexp_pack ~loc
+    pexp_pack
       {
         pmod_desc = Pmod_ident { txt = lident name; loc };
         pmod_loc = loc;
         pmod_attributes = [];
       }
   in
-
-  pexp_tuple ~loc [ label_expr; module_expr ]
+  pexp_tuple [ label_expr; module_expr ]
 
 let expand_many ~ctxt names =
-  let loc = Expansion_context.Extension.extension_point_loc ctxt in
+  let loc = ghost_loc ctxt in
   Ast_builder.Default.elist ~loc (List.map (expand ~ctxt) names)
 
 let my_extension =
