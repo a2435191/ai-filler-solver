@@ -3,8 +3,7 @@ let reference_impl = Int.popcount
 let candidate_impl = Filler.Intrinsics.popcount
 
 let test_case n : unit Alcotest.test_case =
-  let width = 16 in
-  let name = Printf.sprintf "%#*x" width n in
+  let name = Printf.sprintf "0x%16x" n in
   let test_fn () =
     Alcotest.(check int "" (reference_impl n) (candidate_impl n))
   in
