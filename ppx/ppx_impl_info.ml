@@ -17,10 +17,16 @@ let expand ~ctxt name =
 
   pexp_tuple ~loc [ label_expr; module_expr ]
 
+let expand_many ~ctxt names =
+  let loc = Expansion_context.Extension.extension_point_loc ctxt in
+  Ast_builder.Default.elist ~loc (List.map (expand ~ctxt) names)
+
 let my_extension =
   Extension.V3.declare name Extension.Context.expression
-    Ast_pattern.(single_expr_payload (estring __))
-    expand
+    Ast_pattern.(
+      single_expr_payload
+        (pexp_apply (estring __) (many (no_label (estring __)))))
+    (fun ~ctxt hd tl -> expand_many ~ctxt (hd :: tl))
 
 let rule = Ppxlib.Context_free.Rule.extension my_extension
 let () = Driver.register_transformation ~rules:[ rule ] name
