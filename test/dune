@@ -6,4 +6,4 @@
 (test
  (name test_intrinsics)
  (modules test_intrinsics)
- (libraries filler alcotest qcheck-core qcheck-alcotest))
+ (libraries filler alcotest))
