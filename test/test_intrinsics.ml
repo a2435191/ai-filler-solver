@@ -16,7 +16,6 @@ let random_test_case () : unit Alcotest.test_case =
 
 let random_test_cases number = List.init number (fun _ -> random_test_case ())
 let edge_cases = List.map test_case [ 0; 1; -1; Int.max_int; Int.min_int ]
-let x = Printf.fprintf
 
 let () =
   Alcotest.run "Filler.Intrinsics"
