@@ -8,6 +8,8 @@ type t = {
   opp_color : Color.t;
   us_region : bits;
   opp_region : bits;
+  us_region_size : int;
+  opp_region_size : int;
 }
 (** A bitboard: There are 56 colored squares and 6 possible colors per square.
     Each color needing 3 or 4 bits would take 21 or 28 bytes, but instead I just
@@ -21,9 +23,11 @@ type t = {
     We precompute the players' selected colors so that in [move] we don't have
     to compute them the slow way with [get].
 
-    Lastly, we also precompute the players' regions in [move] and just
-    [Int.popcount] the values in [region_size], to avoid duplicating the
-    flood-fill work of [move]. *)
+    Lastly, we also precompute the players' regions in [move] and their sizes
+    ([Int.popcount]) in [region_size], to avoid duplicating the flood-fill work
+    of [move]. [Int.popcount] is not a particularly fast instruction, and it
+    makes [region_size] 60% (a few ns) slower, so we compute it once for the
+    moved player's region in [move], as opposed to twice in [region_size]. *)
 
 let region_of_player (player : Board.player) board =
   match player with Us -> board.us_region | Opp -> board.opp_region
@@ -103,7 +107,13 @@ let of_squares squares =
 
   let us_region = fill out.(Color.to_enum us_color) us_init in
   let opp_region = fill out.(Color.to_enum opp_color) opp_init in
-  { colors = out; us_color; opp_color; us_region; opp_region }
+  {
+    colors = out;
+    us_region; opp_region;
+    us_color; opp_color;
+    us_region_size = Int.popcount us_region;
+    opp_region_size = Int.popcount opp_region;
+  } [@ocamlformat "disable"]
 
 (* Not to be confused with [1 lsl (total_squares - 1)] above *)
 let () = assert ((1 lsl total_squares) - 1 = 0xFF_FF_FF_FF_FF_FF_FF)
@@ -127,9 +137,13 @@ let check_inv board =
   assert (at_least_one_color_inv board);
   assert (at_most_one_color_inv board);
   assert (no_high_bits_inv board);
+  assert (board.us_region_size = Int.popcount board.us_region);
+  assert (board.opp_region_size = Int.popcount board.opp_region);
   board
 
-let region_size board player = Int.popcount (region_of_player player board)
+let region_size board : Board.player -> int = function
+  | Us -> board.us_region_size
+  | Opp -> board.opp_region_size
 
 let move board new_color player =
   let old_color = get_corner board player in
@@ -142,6 +156,7 @@ let move board new_color player =
   let start = region_of_player player board in
 
   let reachable = fill bits start in
+  let size = Int.popcount reachable in
 
   let out = Array.copy board.colors in
   out.(old_color_idx) <- out.(old_color_idx) land lnot reachable;
@@ -150,6 +165,8 @@ let move board new_color player =
   (* Since a player never captures the other player's tiles, we just update the current player's region *)
   match player with
   | Us ->
-      { board with colors = out; us_color = new_color; us_region = reachable }
+      { board with colors = out; us_color = new_color; us_region = reachable; us_region_size = size; } 
+      [@ocamlformat "disable"]
   | Opp ->
-      { board with colors = out; opp_color = new_color; opp_region = reachable }
+      { board with colors = out; opp_color = new_color; opp_region = reachable; opp_region_size = size; }
+      [@ocamlformat "disable"]
