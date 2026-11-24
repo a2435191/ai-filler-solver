@@ -1,2 +1,2 @@
-(* external popcount : int -> int = "fast_popcount" *)
-external id : int -> int = "test_identity"
+external popcount : (int[@untagged]) -> (int[@untagged])
+  = "fast_popcount_bytecode" "fast_popcount_native"
