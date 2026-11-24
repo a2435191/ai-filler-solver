@@ -5,7 +5,8 @@ let candidate_impl = Filler.Intrinsics.popcount
 let test_case n : unit Alcotest.test_case =
   let name = Printf.sprintf "0x%16x" n in
   let test_fn () =
-    Alcotest.(check int "" (reference_impl n) (candidate_impl n))
+    let msg = Printf.sprintf "Failed on 0x%16x = %d" n n in
+    Alcotest.(check int msg (reference_impl n) (candidate_impl n))
   in
   (name, `Always, test_fn)
 
