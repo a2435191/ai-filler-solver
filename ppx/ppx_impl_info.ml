@@ -1,6 +1,6 @@
 open Ppxlib
 
-let name = "get_env"
+let name = "get_impl_info"
 
 let expand ~ctxt (name : label) =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
