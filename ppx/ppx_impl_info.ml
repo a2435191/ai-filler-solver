@@ -2,14 +2,20 @@ open Ppxlib
 
 let name = "get_impl_info"
 
-let expand ~ctxt (name : label) =
+let expand ~ctxt name =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
-  Ast_builder.Default.(
-    pexp_tuple ~loc
-      [
-        pexp_constant ~loc (Pconst_char 'a');
-        pexp_constant ~loc (Pconst_char 'b');
-      ])
+  let open Ast_builder.Default in
+  let label_expr = estring ~loc name in
+  let module_expr =
+    pexp_pack ~loc
+      {
+        pmod_desc = Pmod_ident { txt = lident name; loc };
+        pmod_loc = loc;
+        pmod_attributes = [];
+      }
+  in
+
+  pexp_tuple ~loc [ label_expr; module_expr ]
 
 let my_extension =
   Extension.V3.declare name Extension.Context.expression
