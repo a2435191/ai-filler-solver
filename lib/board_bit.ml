@@ -1,6 +1,8 @@
 open Constants
 
-type t = int array
+type bits = int
+type t = bits array
+
 (** A bitboard: There are 56 colored squares and 6 possible colors per square.
     Each color needing 3 or 4 bits would take 21 or 28 bytes, but instead I just
     keep 6x 64-bit ints around, one for each color, each bit denoting whether
@@ -18,20 +20,28 @@ let () = assert (width = 8 && height = 7)
 
 let bit_idx y x = (y * width) + x
 
-let get_bit y x bits =
+let get_bit y x (bits : bits) =
   let i = bit_idx y x in
   bits land (1 lsl i) <> 0
 
-let set_bit y x bit bits =
+let set_bit y x bit (bits : bits) : bits =
   let i = bit_idx y x in
   if bit then bits lor (1 lsl i) else bits land lnot (1 lsl i)
 
 let get_enum board y x =
-  List.find (fun i -> get_bit y x board.(i)) Color.all_enum
+  (* List.find (fun i -> get_bit y x board.(i)) Color.all_enum *)
+  let rec go i =
+    assert (i <= Color.max);
+    if get_bit y x board.(i) then i else go (i + 1)
+  in
+  go 0
+
+(* Impl *)
 
 (* Impl *)
 
 let get board (y, x) = Color.of_enum_exc (get_enum board y x)
+let get_corner board player = get board (Board.player_to_corner player)
 
 let to_squares board =
   Array.init_matrix height width (fun y x -> get board (y, x))
@@ -47,7 +57,7 @@ let of_squares squares =
   done;
   out
 
-let () = assert ((1 lsl total_squares) - 1 = 0xff_ff_ff_ff_ff_ff_ff)
+let () = assert ((1 lsl total_squares) - 1 = 0xFF_FF_FF_FF_FF_FF_FF)
 
 let at_least_one_color_inv board =
   let or'ed = Array.fold_left ( lor ) 0 board in

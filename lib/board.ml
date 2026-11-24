@@ -47,6 +47,11 @@ module type S = sig
   val get : t -> int * int -> Color.t
   (** [get board (y, x)] returns the color of the square at index [(y, x)] *)
 
+  val get_corner : t -> player -> Color.t
+  (** [get_corner board player] returns the color of the corner corresponding to
+      [player]. [get_corner b p] hould be equivalent to
+      [get b (Board.player_to_corner p)] *)
+
   val check_inv : t -> t
   (** Return the input if it satisfies all the invariants, otherwise raise *)
 
@@ -63,10 +68,6 @@ end
 
 module Make (M : S) = struct
   include M
-
-  (** [get_corner board player] returns the color of the corner corresponding to
-      [player] *)
-  let get_corner b p = M.get b (player_to_corner p)
 
   (** Returns [true] for all six colors except those at the two player corners
   *)

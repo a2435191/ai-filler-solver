@@ -63,6 +63,31 @@ let expect ~what ~eq ~show expected actual =
          (Printf.sprintf "%s\n  expected: %s\n  got:      %s" what
             (show expected) (show actual)))
 
+(** [guard ~what f] runs a call into the implementation under test. If it raises
+    (e.g. an [assert] inside the implementation), the exception is re-raised as
+    [Mismatch] naming the operation, so the report says what was being called
+    rather than only where the implementation failed. *)
+let guard ~what f =
+  try f () with
+  | Mismatch _ as e -> raise e
+  | e ->
+      let bt = Printexc.get_raw_backtrace () in
+      Printexc.raise_with_backtrace
+        (Mismatch
+           (Printf.sprintf "%s\n  raised: %s" what (Printexc.to_string e)))
+        bt
+
+(** [with_board ~label sq f] runs [f]; if it fails, the report gets [sq]
+    appended under [label]. Nested uses add one board each (e.g. the expected
+    board after a move, then the board before it). *)
+let with_board ~label sq f =
+  try f ()
+  with Mismatch msg ->
+    let bt = Printexc.get_raw_backtrace () in
+    Printexc.raise_with_backtrace
+      (Mismatch (Printf.sprintf "%s\n  %s:%s" msg label (show_squares sq)))
+      bt
+
 (* ------------------------------------------------------------------------ *)
 (* Reference model                                                          *)
 (* ------------------------------------------------------------------------ *)
@@ -270,43 +295,69 @@ module Suite (M : Board.S) = struct
      descriptive message on failure (QCheck reports Alcotest's exception). --- *)
 
   let check_board ~what expected b =
+    with_board ~label:"expected board" expected @@ fun () ->
+    let call op f = guard ~what:(what ^ ": " ^ op) f in
     expect ~what:(what ^ ": to_squares") ~eq:squares_equal ~show:show_squares
-      expected (M.to_squares b);
+      expected
+      (call "to_squares" (fun () -> M.to_squares b));
     List.iter
       (fun (y, x) ->
+        let op = Printf.sprintf "get (%d, %d)" y x in
         expect
-          ~what:(Printf.sprintf "%s: get (%d, %d)" what y x)
+          ~what:(what ^ ": " ^ op)
           ~eq:Color.equal ~show:Color.show
           expected.(y).(x)
-          (M.get b (y, x)))
+          (call op (fun () -> M.get b (y, x))))
       all_cells;
+    (* get_corner may be cached, so it gets its own check: after moves, a stale
+       cache would disagree with the squares even if [get] is right *)
     List.iter
       (fun p ->
+        let op = "get_corner " ^ show_player p in
         expect
-          ~what:(Printf.sprintf "%s: region_size %s" what (show_player p))
+          ~what:(what ^ ": " ^ op)
+          ~eq:Color.equal ~show:Color.show
+          (Ref.corner_color expected p)
+          (call op (fun () -> M.get_corner b p)))
+      [ Us; Opp ];
+    List.iter
+      (fun p ->
+        let op = "region_size " ^ show_player p in
+        expect
+          ~what:(what ^ ": " ^ op)
           ~eq:Int.equal ~show:string_of_int
           (Ref.region_size expected p)
-          (M.region_size b p))
+          (call op (fun () -> M.region_size b p)))
       [ Us; Opp ]
 
   let check_fresh sq =
-    let b = build sq in
+    let b = guard ~what:"of_squares" (fun () -> build sq) in
     check_board ~what:"of_squares" sq b;
-    check_board ~what:"check_inv" sq (M.check_inv b);
-    expect ~what:"valid_moves (Board.Make)" ~eq:(List.equal Color.equal)
-      ~show:(fun cs -> String.concat ", " (List.map Color.show cs))
-      (Ref.valid_moves sq) (B.valid_moves b)
+    let b = guard ~what:"check_inv" (fun () -> M.check_inv b) in
+    check_board ~what:"check_inv" sq b;
+    with_board ~label:"board" sq (fun () ->
+        expect ~what:"valid_moves (Board.Make)" ~eq:(List.equal Color.equal)
+          ~show:(fun cs -> String.concat ", " (List.map Color.show cs))
+          (Ref.valid_moves sq)
+          (guard ~what:"valid_moves" (fun () -> B.valid_moves b)))
+
+  (** [move] then [check_inv], with the operation named if either raises *)
+  let do_move ~what b c p =
+    guard ~what:(what ^ ": move") (fun () -> M.move b c p) |> fun b' ->
+    guard ~what:(what ^ ": check_inv") (fun () -> M.check_inv b')
 
   let check_move sq p c =
     let what = Printf.sprintf "move %s %s" (Color.show c) (show_player p) in
-    check_board ~what (Ref.move sq c p) (M.check_inv (M.move (build sq) c p))
+    with_board ~label:"board before the move" sq @@ fun () ->
+    check_board ~what (Ref.move sq c p) (do_move ~what (build sq) c p)
 
   (** [move] must not mutate its input: the solver relies on boards being
       persistent values. *)
   let check_persistence sq p c =
     let b = build sq in
-    ignore (M.move b c p);
-    check_board ~what:"original board after move" sq b
+    let what = Printf.sprintf "move %s %s" (Color.show c) (show_player p) in
+    ignore (guard ~what (fun () -> M.move b c p));
+    check_board ~what:("original board after " ^ what) sq b
 
   (* --- Unit tests on the fixed boards --- *)
 
@@ -332,8 +383,8 @@ module Suite (M : Board.S) = struct
 
   let properties =
     [
-      prop "of_squares, get, region_size, check_inv, valid_moves" Gen.squares
-        Print.squares check_fresh;
+      prop "of_squares, get, get_corner, region_size, check_inv, valid_moves"
+        Gen.squares Print.squares check_fresh;
       prop "move matches reference" Gen.move Print.move (fun (sq, p, i) ->
           check_move sq p (nth_move sq i));
       prop "move does not mutate its input" Gen.move Print.move
@@ -348,12 +399,16 @@ module Suite (M : Board.S) = struct
             | i :: rest ->
                 let c = nth_move sq i in
                 let sq' = Ref.move sq c p in
-                let b' = M.check_inv (M.move b c p) in
-                check_board
-                  ~what:
-                    (Printf.sprintf "playout move %d (%s %s)" n (Color.show c)
-                       (show_player p))
-                  sq' b';
+                let what =
+                  Printf.sprintf "playout move %d (%s %s)" n (Color.show c)
+                    (show_player p)
+                in
+                let b' =
+                  with_board ~label:"board before this move" sq (fun () ->
+                      let b' = do_move ~what b c p in
+                      check_board ~what sq' b';
+                      b')
+                in
                 go sq' b' (other_player p) (n + 1) rest
           in
           go sq (build sq) Us 0 is);
