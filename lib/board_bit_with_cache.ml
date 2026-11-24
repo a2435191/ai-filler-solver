@@ -156,7 +156,7 @@ let move board new_color player =
   let start = region_of_player player board in
 
   let reachable = fill bits start in
-  let size = Int.popcount reachable in
+  let size = Intrinsics.popcount reachable in
 
   let out = Array.copy board.colors in
   out.(old_color_idx) <- out.(old_color_idx) land lnot reachable;
