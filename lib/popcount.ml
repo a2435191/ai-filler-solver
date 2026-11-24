@@ -1,3 +1,2 @@
-external popcount : (int[@untagged]) -> (int[@untagged])
-  = "fast_popcount_bytecode" "fast_popcount_native"
-[@@noalloc]
+external popcount : int -> int = "fast_popcount_bytecode" "fast_popcount_native"
+[@@noalloc] [@@untagged]
