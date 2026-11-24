@@ -8,7 +8,7 @@ CAMLprim value test_identity(value n)
 
 CAMLprim value fast_popcount(value arg)
 {
-    uint64_t n = arg >> 1;
+    uintnat n = Unsigned_long_val(arg);
     int count = __builtin_popcountll(n);
-    return (count << 1) | (arg & 1);
+    return Val_int(count);
 }
