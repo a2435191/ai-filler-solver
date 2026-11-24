@@ -6,7 +6,7 @@ let test_case n : unit Alcotest.test_case =
   let width = 16 in
   let name = Printf.sprintf "%#*x" width n in
   let test_fn () =
-    Alcotest.(check int "TODO" (reference_impl n) (candidate_impl n))
+    Alcotest.(check int "" (reference_impl n) (candidate_impl n))
   in
   (name, `Always, test_fn)
 
