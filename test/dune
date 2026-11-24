@@ -1,3 +1,9 @@
 (test
  (name test_filler)
+ (modules test_filler)
+ (libraries filler alcotest qcheck-core qcheck-alcotest))
+
+(test
+ (name test_intrinsics)
+ (modules test_intrinsics)
  (libraries filler alcotest qcheck-core qcheck-alcotest))
