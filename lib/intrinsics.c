@@ -2,8 +2,8 @@
 
 CAMLprim intnat fast_popcount_native(value arg)
 {
-    unsigned long n = Unsigned_long_val(arg);
-    int bits = __builtin_popcountl(n);
+    unsigned long long n = Unsigned_long_val(arg);
+    int bits = __builtin_popcountll(n);
     return (intnat)bits;
 }
 
