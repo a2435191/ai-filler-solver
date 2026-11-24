@@ -7,7 +7,7 @@ CAMLprim intnat fast_popcount_native(value arg)
     return (intnat)bits;
 }
 
-CAMLprim intnat fast_popcount_bytecode(value *argv, int argn)
+CAMLprim value fast_popcount_bytecode(value arg)
 {
-    return fast_popcount_native(argv[0]);
+    return Val_int(fast_popcount_native(arg));
 }
