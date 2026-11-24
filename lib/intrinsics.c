@@ -1,5 +1,4 @@
 #include <caml/mlvalues.h>
-#include <stdint.h>
 
 CAMLprim value fast_popcount_native(value arg)
 {
