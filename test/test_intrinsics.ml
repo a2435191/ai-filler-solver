@@ -19,4 +19,4 @@ let x = Printf.fprintf
 
 let () =
   Alcotest.run "Filler.Intrinsics"
-    [ ("random test cases", random_test_cases 10); ("edge cases", edge_cases) ]
+    [ ("edge cases", edge_cases); ("random test cases", random_test_cases 10) ]
