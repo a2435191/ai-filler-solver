@@ -10,5 +10,5 @@ CAMLprim value fast_popcount(value arg)
 {
     uint64_t n = arg >> 1;
     int count = __builtin_popcountll(n);
-    return (count << 1) | (n & 1);
+    return (count << 1) | (arg & 1);
 }
