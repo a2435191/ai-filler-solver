@@ -1,9 +1,11 @@
 #include <caml/mlvalues.h>
 #include <stdint.h>
 
-CAMLprim intnat fast_popcount_native(intnat arg)
+CAMLprim value fast_popcount_native(value arg)
 {
-    return __builtin_popcountl(arg);
+    unsigned long n = Unsigned_long_val(arg);
+    int bits = __builtin_popcountl(n);
+    return Val_long(bits);
 }
 
 CAMLprim intnat fast_popcount_bytecode(value *argv, int argn)
