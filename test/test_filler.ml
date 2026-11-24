@@ -63,29 +63,30 @@ let expect ~what ~eq ~show expected actual =
          (Printf.sprintf "%s\n  expected: %s\n  got:      %s" what
             (show expected) (show actual)))
 
-(** [guard ~what f] runs a call into the implementation under test. If it
-    raises (e.g. an [assert] inside the implementation), the exception is
-    re-raised as [Mismatch] naming the operation, so the report says what was
-    being called rather than only where the implementation failed. *)
+(** [guard ~what f] runs a call into the implementation under test. If it raises
+    (e.g. an [assert] inside the implementation), the exception is re-raised as
+    [Mismatch] naming the operation, so the report says what was being called
+    rather than only where the implementation failed. *)
 let guard ~what f =
   try f () with
   | Mismatch _ as e -> raise e
   | e ->
       let bt = Printexc.get_raw_backtrace () in
       Printexc.raise_with_backtrace
-        (Mismatch (Printf.sprintf "%s\n  raised: %s" what (Printexc.to_string e)))
+        (Mismatch
+           (Printf.sprintf "%s\n  raised: %s" what (Printexc.to_string e)))
         bt
 
 (** [with_board ~label sq f] runs [f]; if it fails, the report gets [sq]
     appended under [label]. Nested uses add one board each (e.g. the expected
     board after a move, then the board before it). *)
 let with_board ~label sq f =
-  try f () with
-  | Mismatch msg ->
-      let bt = Printexc.get_raw_backtrace () in
-      Printexc.raise_with_backtrace
-        (Mismatch (Printf.sprintf "%s\n  %s:%s" msg label (show_squares sq)))
-        bt
+  try f ()
+  with Mismatch msg ->
+    let bt = Printexc.get_raw_backtrace () in
+    Printexc.raise_with_backtrace
+      (Mismatch (Printf.sprintf "%s\n  %s:%s" msg label (show_squares sq)))
+      bt
 
 (* ------------------------------------------------------------------------ *)
 (* Reference model                                                          *)
@@ -302,7 +303,9 @@ module Suite (M : Board.S) = struct
     List.iter
       (fun (y, x) ->
         let op = Printf.sprintf "get (%d, %d)" y x in
-        expect ~what:(what ^ ": " ^ op) ~eq:Color.equal ~show:Color.show
+        expect
+          ~what:(what ^ ": " ^ op)
+          ~eq:Color.equal ~show:Color.show
           expected.(y).(x)
           (call op (fun () -> M.get b (y, x))))
       all_cells;
@@ -311,14 +314,18 @@ module Suite (M : Board.S) = struct
     List.iter
       (fun p ->
         let op = "get_corner " ^ show_player p in
-        expect ~what:(what ^ ": " ^ op) ~eq:Color.equal ~show:Color.show
+        expect
+          ~what:(what ^ ": " ^ op)
+          ~eq:Color.equal ~show:Color.show
           (Ref.corner_color expected p)
           (call op (fun () -> M.get_corner b p)))
       [ Us; Opp ];
     List.iter
       (fun p ->
         let op = "region_size " ^ show_player p in
-        expect ~what:(what ^ ": " ^ op) ~eq:Int.equal ~show:string_of_int
+        expect
+          ~what:(what ^ ": " ^ op)
+          ~eq:Int.equal ~show:string_of_int
           (Ref.region_size expected p)
           (call op (fun () -> M.region_size b p)))
       [ Us; Opp ]
@@ -336,8 +343,8 @@ module Suite (M : Board.S) = struct
 
   (** [move] then [check_inv], with the operation named if either raises *)
   let do_move ~what b c p =
-    guard ~what:(what ^ ": move") (fun () -> M.move b c p)
-    |> fun b' -> guard ~what:(what ^ ": check_inv") (fun () -> M.check_inv b')
+    guard ~what:(what ^ ": move") (fun () -> M.move b c p) |> fun b' ->
+    guard ~what:(what ^ ": check_inv") (fun () -> M.check_inv b')
 
   let check_move sq p c =
     let what = Printf.sprintf "move %s %s" (Color.show c) (show_player p) in
@@ -377,8 +384,7 @@ module Suite (M : Board.S) = struct
   let properties =
     [
       prop "of_squares, get, get_corner, region_size, check_inv, valid_moves"
-        Gen.squares
-        Print.squares check_fresh;
+        Gen.squares Print.squares check_fresh;
       prop "move matches reference" Gen.move Print.move (fun (sq, p, i) ->
           check_move sq p (nth_move sq i));
       prop "move does not mutate its input" Gen.move Print.move
