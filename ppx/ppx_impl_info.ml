@@ -22,11 +22,15 @@ let expand_many ~ctxt names =
   Ast_builder.Default.elist ~loc (List.map (expand ~ctxt) names)
 
 let my_extension =
+  let open Ast_pattern in
+  let pat_expr =
+    pexp_apply (estring __) (many (no_label (estring __)))
+    ||| map_result ~f:(fun expr_fun -> expr_fun []) (estring __)
+  in
+
   Extension.V3.declare name Extension.Context.expression
-    Ast_pattern.(
-      single_expr_payload
-        (pexp_apply (estring __) (many (no_label (estring __)))))
-    (fun ~ctxt hd tl -> expand_many ~ctxt (hd :: tl))
+    (single_expr_payload pat_expr) (fun ~ctxt hd tl ->
+      expand_many ~ctxt (hd :: tl))
 
 let rule = Ppxlib.Context_free.Rule.extension my_extension
 let () = Driver.register_transformation ~rules:[ rule ] name
