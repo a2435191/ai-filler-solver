@@ -1,0 +1,8 @@
+#!/bin/zsh
+
+mkdir -p tmp\
+&& dune build --profile release bin/profile.exe && cp _build/default/bin/profile.exe ./tmp/prof_new\
+&& git stash\
+&& dune build --profile release bin/profile.exe && cp _build/default/bin/profile.exe ./tmp/prof_old\
+&& git stash pop\
+&& for i in 1 2 3; do ./tmp/prof_old -depth 10 -seconds 10 -time-only; ./tmp/prof_new -depth 10 -seconds 10 -time-only; done
