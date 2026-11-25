@@ -4,8 +4,14 @@ type t = Red | Green | Yellow | Blue | Purple | Black
 (** 6 *)
 let count = max + 1
 
-let all_enum = List.init count Fun.id
-let all = List.map (Fun.compose Option.get of_enum) all_enum
+let all_enum = [ 0; 1; 2; 3; 4; 5 ]
+let _ = assert (all_enum = List.init count Fun.id)
+
+(* *)
+let all = [ Red; Green; Yellow; Blue; Purple; Black ]
+let _ = assert (all = List.map (Fun.compose Option.get of_enum) all_enum)
+
+(* *)
 let of_enum_exc = Fun.compose Option.get of_enum
 
 let to_square = function
