@@ -70,7 +70,7 @@ module Make (M : Board.S) = struct
 
       match p with
       | Us ->
-          List.fold_left
+          (List.fold_left [@unrolled 6])
             (fun (best_move, best_score) c ->
               if Color.(equal c c_us || equal c c_opp) then
                 (best_move, best_score)
@@ -80,7 +80,7 @@ module Make (M : Board.S) = struct
                 else (best_move, best_score))
             (Color.Red, neg_infinity) Color.all
       | Opp ->
-          List.fold_left
+          (List.fold_left [@unrolled 6])
             (fun (best_move, best_score) c ->
               if Color.(equal c c_us || equal c c_opp) then
                 (best_move, best_score)
