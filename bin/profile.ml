@@ -207,7 +207,8 @@ let () =
   and lines = ref false
   and recursion = ref false
   and mark_inlined = ref false
-  and out = ref "profile.folded" in
+  and out = ref "profile.folded"
+  and time_only = ref false in
   Arg.parse
     [
       ( "-workload",
@@ -227,6 +228,10 @@ let () =
       ( "-keep-recursion",
         Arg.Set recursion,
         " keep one frame per recursion level (default: merge them)" );
+      ( "-time-only",
+        Arg.Set time_only,
+        "Don't run the sampler, just compute the total CPU time and time/iter"
+      );
       ("-o", Arg.Set_string out, "FILE  output (default profile.folded)");
     ]
     (fun s ->
@@ -238,16 +243,25 @@ let () =
               s)))
     ("profile.exe [options]\n\nProfiles " ^ impl_name ^ ".\n\nOptions:");
   Random.init 0xF1A3E;
-  start_sampling ~interval:!interval;
+  if not !time_only then start_sampling ~interval:!interval;
   let iterations, cpu_time =
     W.run ~kind:!kind ~depth:!depth ~seconds:!seconds
   in
-  stop_sampling ();
-  write_folded ~lines:!lines ~mark_inlined:!mark_inlined ~recursion:!recursion
-    !out;
-  Printf.printf "%s: %d %s runs (%.3f s total, %.3f ms per), %d samples -> %s\n"
-    impl_name iterations
-    (match !kind with `Minimax -> "minimax" | `Playout -> "playout")
-    cpu_time
-    (1000. *. cpu_time /. float_of_int iterations)
-    !n_samples !out
+  if not !time_only then (
+    stop_sampling ();
+    write_folded ~lines:!lines ~mark_inlined:!mark_inlined ~recursion:!recursion
+      !out);
+
+  let info =
+    Printf.sprintf "%s: %d %s runs (%.3f s total, %.3f ms per)" impl_name
+      iterations
+      (match !kind with `Minimax -> "minimax" | `Playout -> "playout")
+      cpu_time
+      (1000. *. cpu_time /. float_of_int iterations)
+  in
+  let sampler_info =
+    if !time_only then ""
+    else Printf.sprintf ", %d samples -> %s" !n_samples !out
+  in
+
+  print_endline (info ^ sampler_info)

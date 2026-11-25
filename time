@@ -1,0 +1,4 @@
+#!/bin/zsh
+
+mkdir -p tmp\
+&& dune exec --profile release bin/profile.exe -- -depth 8 -seconds 10 -time-only
