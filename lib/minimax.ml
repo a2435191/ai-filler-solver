@@ -64,18 +64,38 @@ module Make (M : Board.S) = struct
       in
 
       (* 4 available moves *)
-      let moves = valid_moves b in
 
       (* Below, we get the move that scores the highest (helps [Us]) if it's our turn, 
       otherwise the move that scores the lowest (helps [Opp])  *)
-      let moves_and_scores =
-        List.map (fun c -> (c, score_fn (move b c p))) moves
+      let best_move = ref Color.Red
+      and best_score =
+        ref (match p with Us -> neg_infinity | Opp -> infinity)
       in
-      let le (_, score1) (_, score2) = (score1 : float) <= score2 in
 
-      match p with
-      | Us -> max_of_list ~le moves_and_scores
-      | Opp -> min_of_list ~le moves_and_scores
+      let c_us = get_corner b Us in
+      let c_opp = get_corner b Opp in
+
+      (match p with
+      | Us ->
+          for i = 0 to Color.max do
+            let c = Color.of_enum_exc i in
+            if not Color.(equal c_us c || equal c_opp c) then
+              let score = score_fn (move b c p) in
+              if score > !best_score then (
+                best_move := c;
+                best_score := score)
+          done
+      | Opp ->
+          for i = 0 to Color.max do
+            let c = Color.of_enum_exc i in
+            if not Color.(equal c_us c || equal c_opp c) then
+              let score = score_fn (move b c p) in
+              if score < !best_score then (
+                best_move := c;
+                best_score := score)
+          done);
+
+      (!best_move, !best_score)
     in
 
     go max_depth board player
