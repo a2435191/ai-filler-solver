@@ -60,7 +60,8 @@ let stop_sampling () =
 let short_name name =
   let drop prefix s =
     if String.starts_with ~prefix s then
-      String.sub s (String.length prefix) (String.length s - String.length prefix)
+      String.sub s (String.length prefix)
+        (String.length s - String.length prefix)
     else s
   in
   name |> drop "Filler__" |> drop "Dune__exe__"
@@ -70,9 +71,7 @@ let short_name name =
     without, frames merge per function, which is usually what you want. *)
 let label ~lines ~mark_inlined slot =
   let name =
-    match Printexc.Slot.name slot with
-    | Some n -> short_name n
-    | None -> "?"
+    match Printexc.Slot.name slot with Some n -> short_name n | None -> "?"
   in
   let name =
     if mark_inlined && Printexc.Slot.is_inline slot then name ^ " [inlined]"
@@ -129,8 +128,7 @@ let write_folded ~lines ~mark_inlined ~recursion path =
       (* entries are innermost-first; flamegraphs want root-first *)
       let frames =
         Printexc.raw_backtrace_entries bt
-        |> Array.to_list
-        |> List.concat_map frames_of
+        |> Array.to_list |> List.concat_map frames_of
         |> List.filter (fun l -> not (is_profiler_frame l))
         |> List.rev
       in
@@ -148,13 +146,23 @@ let write_folded ~lines ~mark_inlined ~recursion path =
 (* Workloads                                                                *)
 (* ------------------------------------------------------------------------ *)
 
+(* The implementation being profiled. It is fixed at compile time, rather
+   than picked at run time from [Impls.list], so flambda sees the concrete
+   module and can make direct (and inlinable) calls into it, as in the real
+   program; going through a first-class module would turn every board call
+   into an unknown function call. Change both lines to profile another one. *)
+module Impl = Board_bit_with_cache
+
+let impl_name = "Board_bit_with_cache"
+
 module Workload (M : Board.S) = struct
   module BM = Board.Make (M)
   module MM = Minimax.Make (M)
 
   let boards = Array.init 64 (fun _ -> M.of_squares (IO.random_squares ()))
 
-  let minimax ~depth b = ignore (Sys.opaque_identity (MM.minimax ~max_depth:depth b))
+  let minimax ~depth b =
+    ignore (Sys.opaque_identity (MM.minimax ~max_depth:depth b))
 
   let playout b =
     let rec go b p =
@@ -173,9 +181,7 @@ module Workload (M : Board.S) = struct
     while Sys.time () < deadline do
       let b = boards.(!i mod Array.length boards) in
       incr i;
-      match kind with
-      | `Minimax -> minimax ~depth b
-      | `Playout -> playout b
+      match kind with `Minimax -> minimax ~depth b | `Playout -> playout b
     done;
     !i
 end
@@ -184,9 +190,10 @@ end
 (* CLI                                                                      *)
 (* ------------------------------------------------------------------------ *)
 
+module W = Workload (Impl)
+
 let () =
-  let impl = ref "Board_bit_with_cache"
-  and kind = ref `Minimax
+  let kind = ref `Minimax
   and depth = ref 6
   and seconds = ref 5.
   and interval = ref 0.001
@@ -215,28 +222,20 @@ let () =
         " keep one frame per recursion level (default: merge them)" );
       ("-o", Arg.Set_string out, "FILE  output (default profile.folded)");
     ]
-    (fun s -> impl := s)
-    "profile.exe [options] [MODULE]\n\nModules: "
-  ;
-  let (module M : Board.S) =
-    match
-      List.find_opt
-        (fun (n, _) -> String.lowercase_ascii n = String.lowercase_ascii !impl)
-        Impls.list
-    with
-    | Some (_, m) -> m
-    | None ->
-        Printf.eprintf "Unknown module %s. Known: %s\n" !impl
-          (String.concat ", " (List.map fst Impls.list));
-        exit 2
-  in
-  let module W = Workload (M) in
+    (fun s ->
+      raise
+        (Arg.Bad
+           (Printf.sprintf
+              "unexpected argument %S: the implementation is fixed at compile \
+               time (Impl in bin/profile.ml)"
+              s)))
+    ("profile.exe [options]\n\nProfiles " ^ impl_name ^ ".\n\nOptions:");
   Random.init 0xF1A3E;
   start_sampling ~interval:!interval;
   let iterations = W.run ~kind:!kind ~depth:!depth ~seconds:!seconds in
   stop_sampling ();
   write_folded ~lines:!lines ~mark_inlined:!mark_inlined ~recursion:!recursion
     !out;
-  Printf.printf "%s: %d %s runs, %d samples -> %s\n" !impl iterations
+  Printf.printf "%s: %d %s runs, %d samples -> %s\n" impl_name iterations
     (match !kind with `Minimax -> "minimax" | `Playout -> "playout")
     !n_samples !out
