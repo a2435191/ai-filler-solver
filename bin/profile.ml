@@ -236,6 +236,8 @@ let () =
   stop_sampling ();
   write_folded ~lines:!lines ~mark_inlined:!mark_inlined ~recursion:!recursion
     !out;
-  Printf.printf "%s: %d %s runs, %d samples -> %s\n" impl_name iterations
+  Printf.printf "%s: %d %s runs (%.3f ms per), %d samples -> %s\n" impl_name
+    iterations
     (match !kind with `Minimax -> "minimax" | `Playout -> "playout")
+    (1000. *. !seconds /. float_of_int iterations)
     !n_samples !out
