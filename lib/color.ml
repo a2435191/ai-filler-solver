@@ -14,11 +14,11 @@ let all_enum = [ 0; 1; 2; 3; 4; 5 ]
 let () = assert (all_enum = List.init count Fun.id)
 
 (* *)
-let all = [ Red; Green; Yellow; Blue; Purple; Black ]
-let () = assert (all = List.map (Fun.compose Option.get of_enum) all_enum)
+let of_enum_exc = Fun.compose Option.get of_enum
 
 (* *)
-let of_enum_exc = Fun.compose Option.get of_enum
+let all = [ Red; Green; Yellow; Blue; Purple; Black ]
+let () = assert (all = List.map of_enum_exc all_enum)
 
 let to_square = function
   | Red -> "🟥"
