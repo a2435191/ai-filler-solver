@@ -4,6 +4,12 @@ type t = Red | Green | Yellow | Blue | Purple | Black
 (** 6 *)
 let count = max + 1
 
+let () =
+  assert (count = 6);
+  assert (min = 0);
+  assert (max = 5)
+
+(* *)
 let all_enum = [ 0; 1; 2; 3; 4; 5 ]
 let () = assert (all_enum = List.init count Fun.id)
 
