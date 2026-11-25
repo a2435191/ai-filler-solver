@@ -23,7 +23,7 @@ let from_string = function
   | "b" | "B" | "🟦" -> Blue
   | "p" | "P" | "🟪" -> Purple
   | "k" | "K" | "⬛" -> Black
-  | other -> raise (Invalid_argument other)
+  | other -> invalid_arg other
 
 (* Get a uniformly random color *)
 let random () = of_enum (Random.int_in_range ~min ~max) |> Option.get

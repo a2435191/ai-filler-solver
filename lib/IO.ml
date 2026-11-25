@@ -40,7 +40,7 @@ let parse_line line : Color.t array =
         else
           let c = Color.from_string s in
           go i' (c :: acc)
-      else raise (Invalid_argument ("Failed to parse line: " ^ line))
+      else invalid_arg ("Failed to parse line: " ^ line)
   in
   Array.of_list (go 0 [])
 
