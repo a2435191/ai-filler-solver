@@ -63,38 +63,32 @@ module Make (M : Board.S) = struct
       in
 
       (* 4 available moves *)
-
       (* Below, we get the move that scores the highest (helps [Us]) if it's our turn, 
       otherwise the move that scores the lowest (helps [Opp])  *)
-      let best_move = ref Color.Red
-      and best_score =
-        ref (match p with Us -> neg_infinity | Opp -> infinity)
-      in
-
       let c_us = get_corner b Us in
       let c_opp = get_corner b Opp in
 
-      (match p with
+      match p with
       | Us ->
-          for i = 0 to Color.max do
-            let c = Color.of_enum_exc i in
-            if not Color.(equal c_us c || equal c_opp c) then
-              let score = score_fn (move b c p) in
-              if score > !best_score then (
-                best_move := c;
-                best_score := score)
-          done
+          List.fold_left
+            (fun (best_move, best_score) c ->
+              if Color.(equal c c_us || equal c c_opp) then
+                (best_move, best_score)
+              else
+                let score = score_fn (move b c Us) in
+                if score > best_score then (c, score)
+                else (best_move, best_score))
+            (Color.Red, neg_infinity) Color.all
       | Opp ->
-          for i = 0 to Color.max do
-            let c = Color.of_enum_exc i in
-            if not Color.(equal c_us c || equal c_opp c) then
-              let score = score_fn (move b c p) in
-              if score < !best_score then (
-                best_move := c;
-                best_score := score)
-          done);
-
-      (!best_move, !best_score)
+          List.fold_left
+            (fun (best_move, best_score) c ->
+              if Color.(equal c c_us || equal c c_opp) then
+                (best_move, best_score)
+              else
+                let score = score_fn (move b c Opp) in
+                if score < best_score then (c, score)
+                else (best_move, best_score))
+            (Color.Red, infinity) Color.all
     in
 
     go max_depth board player
