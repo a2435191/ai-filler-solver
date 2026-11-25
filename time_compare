@@ -1,6 +1,7 @@
 #!/bin/zsh
 
 mkdir -p tmp\
+&& chmod u+w ./tmp/prof_new ./tmp/prof_old\
 && dune build --profile release bin/profile.exe && cp _build/default/bin/profile.exe ./tmp/prof_new\
 && git stash\
 && dune build --profile release bin/profile.exe && cp _build/default/bin/profile.exe ./tmp/prof_old\
