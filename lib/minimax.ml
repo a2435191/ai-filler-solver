@@ -24,7 +24,7 @@ let heuristic us opp fuel =
     comparison [<=] is done by the [le] function ([le x y] returns [true] iff
     [x <= y]). Tiebreaking order is unspecified. Raises for an empty list. *)
 let max_of_list ~le = function
-  | [] -> raise (Invalid_argument "max_of_list got passed an empty list")
+  | [] -> invalid_arg "max_of_list got passed an empty list"
   | h :: t -> List.fold_left (fun acc x -> if le acc x then x else acc) h t
 
 (** [min_of_list ~le lst] is like [max_of_list] but returns the minimum element
@@ -43,9 +43,8 @@ module Make (M : Board.S) = struct
       return the best move. *)
   let minimax ?(max_depth = 10) ?(player = Board.Us) board =
     if max_depth <= 0 then
-      raise
-        (Invalid_argument
-           (Printf.sprintf "Expected max_depth > 0, got %d instead" max_depth));
+      invalid_arg
+        (Printf.sprintf "Expected max_depth > 0, got %d instead" max_depth);
 
     (* Returns the best [(color, score)] for player [p] to make, with [fuel] search depth remaining *)
     let rec go fuel b p : Color.t * float =
