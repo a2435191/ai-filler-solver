@@ -50,9 +50,6 @@ module Make (M : Board.S) = struct
     (* Returns the best [(color, score)] for player [p] to make, with [fuel] search depth remaining *)
     let rec go fuel b p : Color.t * float =
       assert (fuel >= 1);
-      (* 4 available moves *)
-      let moves = valid_moves b in
-
       (* what we use to evaluate moves *)
       let score_fn b =
         let us_size = region_size b Us in
@@ -65,6 +62,9 @@ module Make (M : Board.S) = struct
           let _, us_score = go (fuel - 1) b (Board.other_player p) in
           us_score
       in
+
+      (* 4 available moves *)
+      let moves = valid_moves b in
 
       (* Below, we get the move that scores the highest (helps [Us]) if it's our turn, 
       otherwise the move that scores the lowest (helps [Opp])  *)
