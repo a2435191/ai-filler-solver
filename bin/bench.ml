@@ -143,7 +143,8 @@ end
 (* Measurement                                                              *)
 (* ------------------------------------------------------------------------ *)
 
-type result = { ns : float; words : float; r2 : float }
+type result = { ns : float; words : float option; r2 : float }
+(** [words] are omitted iff alloc measurement is disabled *)
 
 let instances = Instance.[ monotonic_clock ]
 let ols = Analyze.ols ~bootstrap:0 ~r_square:true ~predictors:Measure.[| run |]
@@ -160,13 +161,13 @@ let words_per_run f =
   done;
   (Gc.minor_words () -. before) /. float_of_int n
 
-let measure cfg name f =
+let measure cfg name f measure_alloc =
   let test = Test.make ~name (Staged.stage f) in
   let raw = Benchmark.run cfg instances (List.hd (Test.elements test)) in
   let fit = Analyze.one ols Instance.monotonic_clock raw in
   {
     ns = (match Analyze.OLS.estimates fit with Some [ x ] -> x | _ -> nan);
-    words = words_per_run f;
+    words = (if measure_alloc then Some (words_per_run f) else None);
     r2 = Option.value ~default:nan (Analyze.OLS.r_square fit);
   }
 
@@ -185,7 +186,7 @@ let () =
   and quota = ref 0.5
   and only = ref []
   and names = ref []
-  and show_alloc = ref true in
+  and measure_alloc = ref true in
 
   let usage =
     "bench.exe [options] [MODULE ...]\n\nModules: "
@@ -201,9 +202,9 @@ let () =
       ( "-only",
         Arg.String (fun s -> only := String.split_on_char ',' s),
         "W1,W2  only run workloads whose name starts with one of these" );
-      ( "-show-alloc",
-        Arg.Bool (fun b -> show_alloc := b),
-        "Whether to print the # of allocations (default true)" );
+      ( "-measure-alloc",
+        Arg.Bool (fun b -> measure_alloc := b),
+        "Whether to measure and print the # of allocations (default true)" );
     ]
     (fun s -> names := s :: !names)
     usage;
@@ -276,7 +277,9 @@ let () =
       (* Measure all modules for this workload back to back, so slow drift in
          machine load affects them similarly *)
       let results =
-        List.map (fun (n, fn) -> measure cfg (w ^ "/" ^ n) (fn w)) runners
+        List.map
+          (fun (n, fn) -> measure cfg (w ^ "/" ^ n) (fn w) !measure_alloc)
+          runners
       in
       let base = (List.hd results).ns in
       List.iteri
@@ -287,11 +290,12 @@ let () =
           Printf.printf "%-*s" col (pp_time r.ns ^ vs))
         results;
       print_newline ();
-      if !show_alloc then (
+      if !measure_alloc then (
         Printf.printf "%-22s" "  alloc (words), r²";
         List.iter
           (fun r ->
-            Printf.printf "%-*s" col (Printf.sprintf "%.0f, %.3f" r.words r.r2))
+            Printf.printf "%-*s" col
+              (Printf.sprintf "%.0f, %.3f" (Option.get r.words) r.r2))
           results;
         print_newline ()))
     workloads;
