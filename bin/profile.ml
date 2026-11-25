@@ -176,14 +176,21 @@ module Workload (M : Board.S) = struct
 
   (** Run [kind] over the boards, round-robin, until [seconds] of CPU time *)
   let run ~kind ~depth ~seconds =
-    let deadline = Sys.time () +. seconds in
     let i = ref 0 in
-    while Sys.time () < deadline do
+    let elapsed = ref 0. in
+    while !elapsed < seconds do
       let b = boards.(!i mod Array.length boards) in
-      incr i;
-      match kind with `Minimax -> minimax ~depth b | `Playout -> playout b
+      let fn =
+        match kind with `Minimax -> minimax ~depth | `Playout -> playout
+      in
+      let t0 = Sys.time () in
+      fn b;
+      let t1 = Sys.time () in
+
+      elapsed := !elapsed +. (t1 -. t0);
+      incr i
     done;
-    !i
+    (!i, !elapsed)
 end
 
 (* ------------------------------------------------------------------------ *)
@@ -232,12 +239,15 @@ let () =
     ("profile.exe [options]\n\nProfiles " ^ impl_name ^ ".\n\nOptions:");
   Random.init 0xF1A3E;
   start_sampling ~interval:!interval;
-  let iterations = W.run ~kind:!kind ~depth:!depth ~seconds:!seconds in
+  let iterations, cpu_time =
+    W.run ~kind:!kind ~depth:!depth ~seconds:!seconds
+  in
   stop_sampling ();
   write_folded ~lines:!lines ~mark_inlined:!mark_inlined ~recursion:!recursion
     !out;
-  Printf.printf "%s: %d %s runs (%.3f ms per), %d samples -> %s\n" impl_name
-    iterations
+  Printf.printf "%s: %d %s runs (%.3f s total, %.3f ms per), %d samples -> %s\n"
+    impl_name iterations
     (match !kind with `Minimax -> "minimax" | `Playout -> "playout")
-    (1000. *. !seconds /. float_of_int iterations)
+    cpu_time
+    (1000. *. cpu_time /. float_of_int iterations)
     !n_samples !out
