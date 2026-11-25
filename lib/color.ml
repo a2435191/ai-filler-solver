@@ -18,7 +18,7 @@ let of_enum_exc = Fun.compose Option.get of_enum
 
 (* *)
 let all = [ Red; Green; Yellow; Blue; Purple; Black ]
-let () = assert (all = List.map of_enum_exc all_enum)
+let () = assert (all = List.map of_enum_exc all_enum) (* same order *)
 
 let to_square = function
   | Red -> "🟥"
