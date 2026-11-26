@@ -58,7 +58,7 @@ module Make (M : Board.S) = struct
           List.nth (BoardM.valid_moves b) i);
     }
 
-  let greedy_of_fn name (eval : M.t -> float) =
+  let greedy_of_fn name (eval : M.t -> Minimax.score) =
     {
       name = "greedy-" ^ name;
       f =
@@ -67,7 +67,7 @@ module Make (M : Board.S) = struct
           let moves_and_scores =
             List.map (fun c -> (c, eval (move b c player))) moves
           in
-          let le (_, score1) (_, score2) = (score1 : float) <= score2 in
+          let le (_, score1) (_, score2) = (score1 : int) <= score2 in
           let best, _ =
             match player with
             | Us -> Minimax.max_of_list ~le moves_and_scores

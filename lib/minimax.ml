@@ -1,6 +1,8 @@
 open Constants
 
-let win_score = 10000.0
+type score = int
+
+let win_score : score = 10000
 
 (** [heuristic us_score opp_score fuel] evaluates how good/bad a game state with
     [us_score] many tiles controlled by [Us] and [opp_score] many controlled by
@@ -9,16 +11,16 @@ let win_score = 10000.0
     means good for [Us], - means good for [Opp]. This function is used when we
     don't want to go deeper into the search tree, either because we're out of
     [fuel] or because we're in a terminal state (see [Board.is_done]). *)
-let heuristic us opp fuel =
+let heuristic us opp fuel : score =
   assert (us > 0);
   assert (opp > 0);
   assert (us + opp <= total_squares);
 
   match Board.end_state us opp with
-  | Win -> win_score +. float_of_int fuel
-  | Loss -> -.win_score -. float_of_int fuel
-  | Tie -> 0.0
-  | Not_done -> (* this is biased by whose turn it is *) float_of_int (us - opp)
+  | Win -> win_score + fuel
+  | Loss -> -win_score - fuel
+  | Tie -> 0
+  | Not_done -> (* this is biased by whose turn it is *) us - opp
 
 (** [max_of_list ~le lst] computes the maximum element of [lst], where
     comparison [<=] is done by the [le] function ([le x y] returns [true] iff
@@ -41,13 +43,13 @@ module Make (M : Board.S) = struct
       at most [max_depth] (default: [10]) moves deep. [max_depth] must therefore
       be positive, since we always have to search for at least one move to
       return the best move. *)
-  let minimax ?(max_depth = 10) ?(player = Board.Us) board =
+  let minimax ?(max_depth = 10) ?(player = Board.Us) board : Color.t * score =
     if max_depth <= 0 then
       invalid_arg
         (Printf.sprintf "Expected max_depth > 0, got %d instead" max_depth);
 
     (* Returns the best [(color, score)] for player [p] to make, with [fuel] search depth remaining *)
-    let rec go fuel b p : Color.t * float =
+    let rec go fuel b p : Color.t * score =
       assert (fuel >= 1);
       (* what we use to evaluate moves *)
       let score_fn b =
@@ -80,8 +82,8 @@ module Make (M : Board.S) = struct
       in
 
       match p with
-      | Us -> opt_score neg_infinity ( > ) Us
-      | Opp -> opt_score infinity ( < ) Opp
+      | Us -> opt_score min_int ( > ) Us
+      | Opp -> opt_score max_int ( < ) Opp
     in
 
     go max_depth board player
