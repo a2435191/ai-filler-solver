@@ -69,7 +69,8 @@ module Make (M : Board.S) = struct
       let[@inline] opt_score init_score cmp p =
         (List.fold_left [@unrolled 6])
           (fun (best_move, best_score) c ->
-            (* 4 available moves *)
+            (* 4 valid moves. For efficiency we do this ourselves 
+               instead of calling [valid_moves] in board.ml *)
             if Color.(equal c c_us || equal c c_opp) then (best_move, best_score)
             else
               let score = score_fn (move b c p) in
