@@ -62,15 +62,15 @@ module Make (M : Board.S) = struct
           us_score
       in
 
-      (* 4 available moves *)
-      (* Below, we get the move that scores the highest (helps [Us]) if it's our turn, 
-      otherwise the move that scores the lowest (helps [Opp])  *)
       let c_us = get_corner b Us in
       let c_opp = get_corner b Opp in
 
+      (* Below, we get the move that scores the highest (helps [Us]) if it's our turn, 
+        otherwise the move that scores the lowest (helps [Opp])  *)
       let[@inline] opt_score init_score cmp p =
         (List.fold_left [@unrolled 6])
           (fun (best_move, best_score) c ->
+            (* 4 available moves *)
             if Color.(equal c c_us || equal c c_opp) then (best_move, best_score)
             else
               let score = score_fn (move b c p) in
