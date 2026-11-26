@@ -62,8 +62,7 @@ module Make (M : Board.S) = struct
           us_score
       in
 
-      let c_us = get_corner b Us in
-      let c_opp = get_corner b Opp in
+      let c_us = get_corner b Us and c_opp = get_corner b Opp in
 
       (* Below, we get the move that scores the highest (helps [Us]) if it's our turn, 
         otherwise the move that scores the lowest (helps [Opp])  *)
