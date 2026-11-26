@@ -68,27 +68,20 @@ module Make (M : Board.S) = struct
       let c_us = get_corner b Us in
       let c_opp = get_corner b Opp in
 
+      let[@inline] opt_score init_score cmp p =
+        (List.fold_left [@unrolled 6])
+          (fun (best_move, best_score) c ->
+            if Color.(equal c c_us || equal c c_opp) then (best_move, best_score)
+            else
+              let score = score_fn (move b c p) in
+              if cmp score best_score then (c, score)
+              else (best_move, best_score))
+          (Color.Red, init_score) Color.all
+      in
+
       match p with
-      | Us ->
-          (List.fold_left [@unrolled 6])
-            (fun (best_move, best_score) c ->
-              if Color.(equal c c_us || equal c c_opp) then
-                (best_move, best_score)
-              else
-                let score = score_fn (move b c Us) in
-                if score > best_score then (c, score)
-                else (best_move, best_score))
-            (Color.Red, neg_infinity) Color.all
-      | Opp ->
-          (List.fold_left [@unrolled 6])
-            (fun (best_move, best_score) c ->
-              if Color.(equal c c_us || equal c c_opp) then
-                (best_move, best_score)
-              else
-                let score = score_fn (move b c Opp) in
-                if score < best_score then (c, score)
-                else (best_move, best_score))
-            (Color.Red, infinity) Color.all
+      | Us -> opt_score neg_infinity ( > ) Us
+      | Opp -> opt_score infinity ( < ) Opp
     in
 
     go max_depth board player
